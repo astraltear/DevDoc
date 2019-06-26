@@ -1,0 +1,372 @@
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> JDK
+
+* OPEN JDK
+java-버전-openjdk 패키지가 JRE,
+java-버전-openjdk-devel 패키지가 JDK라고 생각하면 된다.
+
+arch  : 32bit 64bit 확인 
+
+설치 확인 :  yum list installed *jdk-devel
+yum list java*jdk-devel
+yum install java-11-openjdk-devel.x86_64
+설치 위치 : /usr/lib/jvm
+
+* source 설치
+cd /usr/local/src
+tar -zxvf jdk-8u73-linux-x64.tar.gz
+mv jdk1.8.0_73 /usr/local
+cd /usr/local
+ln -s jdk1.8.0_73 java
+
+vi /etc/profile
+JAVA_HOME=/usr/local/java
+CLASSPATH=.:$JAVA_HOME/lib/tools.jar
+PATH=$PATH:$JAVA_HOME/bin
+export JAVA_HOME CLASSPATH PATH
+
+source /etc/profile
+
+/etc/profile에 할 수도 있고 각 계정의 .bash_profile 에 할 수도 있다.
+vi .bash_profile
+. .bash_profile
+
+
+
+java -version
+javac -version
+
+javac 실행시 아래와 같은 에러 발생시 
+/lib/ld-linux.so.2 bad elf interpreter 그런 파일이나 디렉터리가 없습니다
+
+yum install ld-linux.so.2
+
+실행시 지연되면 아래의 내용을 추가한다.(동일한 환경에서도 아래의 케이스가 발생한다.)
+https://jiyeonseo.github.io/2016/08/06/springboot-centos-tomcat-issue/
+
+vi $JAVA_HOME/jre/lib/security/java.security
+securerandom.source=file:/dev/urandom
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TOMCAT
+
+wget http://archive.apache.org/dist/tomcat/tomcat-9/v9.0.19/bin/apache-tomcat-9.0.19.tar.gz
+
+tar -zxvf apache-tomcat-9.0.19.tar.gz
+mv apache-tomcat-9.0.19 tomcat-9
+chown -R user:group ./tomcat-9
+
+mkdir /storage/tomcat-9/instance1
+mkdir /storage/tomcat-9/instance2
+
+cd /storage/tomcat-9/
+
+cp -R ./conf ./instance1;cp -R ./logs ./instance1;cp -R ./temp ./instance1; cp -R ./webapps ./instance1; cp -R ./work ./instance1
+cp -R ./conf ./instance2;cp -R ./logs ./instance2;cp -R ./temp ./instance2; cp -R ./webapps ./instance2; cp -R ./work ./instance2
+rm -rf ./conf;rm -rf ./logs;rm -rf ./temp;rm -rf ./webapps;rm -rf ./work
+
+cd /home/user
+
+vim .bash_profile
+CATALINA_HOME=/storage/tomcat-9
+export CATALINA_HOME
+
+. .bash_profile
+
+cd $CATALINA_HOME
+
+vim /storage/tomcat-9/instance1/conf/server.xml
+<Server port="8005" shutdown="SHUTDOWN">
+<Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" URIEncoding="UTF-8" maxThreads="250"/>
+<Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+<Engine jvmRoute="server1" 
+
+
+vim /storage/tomcat-9/instance2/conf/server.xml
+<Server port="8105" shutdown="SHUTDOWN">
+<Connector port="8181" protocol="HTTP/1.1"	connectionTimeout="20000" redirectPort="81443" URIEncoding="UTF-8" maxThreads="250"/>
+<Connector port="8109" protocol="AJP/1.3" redirectPort="81443" />
+<Engine jvmRoute="server2" 
+
+
+*  시작
+vim /storage/tomcat-9/instance1/startup-instance1.sh
+#!/usr/bin/env bash
+echo "---------------------------------------------------------------------------"
+echo
+echo " startup tomcat instance1 "
+echo
+echo "---------------------------------------------------------------------------"
+
+VALID_USER_NAME="newUser"
+
+# check user account
+execUserId=`whoami`
+
+if [ $execUserId != $VALID_USER_NAME ]; then
+    echo "Please run this script in the '$VALID_USER_NAME' account..."
+    exit 1
+fi
+
+export CATALINA_BASE=/storage/tomcat-9/instance1
+export CATALINA_OPTS="-Denv=product -Denv.servername=instance1"
+export JAVA_OPTS="-Dfile.encoding=UTF-8 -Xms1024m -Xmx1024m -XX:+DisableExplicitGC"
+cd $CATALINA_HOME/bin
+./startup.sh
+
+
+*  종료
+vim /storage/tomcat-9/instance1/shutdown-instance1.sh
+#!/usr/bin/env bash
+export CATALINA_BASE=/storage/tomcat-9/instance1
+cd $CATALINA_HOME/bin
+./shutdown.sh
+
+chmod 755  /storage/tomcat-9/instance1/*.sh
+
+*  시작
+vim /storage/tomcat-9/instance2/startup-instance2.sh
+#!/usr/bin/env bash
+
+echo "---------------------------------------------------------------------------"
+echo
+echo " startup tomcat instance2 "
+echo
+echo "---------------------------------------------------------------------------"
+
+VALID_USER_NAME="newUser"
+
+# check user account
+execUserId=`whoami`
+
+if [ $execUserId != $VALID_USER_NAME ]; then
+    echo "Please run this script in the '$VALID_USER_NAME' account..."
+    exit 1
+fi
+
+export CATALINA_BASE=/storage/tomcat-9/instance2
+export CATALINA_OPTS="-Denv=product -Denv.servername=instance2"
+export JAVA_OPTS="-Dfile.encoding=UTF-8 -Xms1024m -Xmx1024m -XX:+DisableExplicitGC"
+cd $CATALINA_HOME/bin
+./startup.sh
+
+*  종료
+vim /storage/tomcat-9/instance2/shutdown-instance2.sh
+#!/usr/bin/env bash
+export CATALINA_BASE=/storage/tomcat-9/instance2
+cd $CATALINA_HOME/bin
+./shutdown.sh
+
+chmod 755  /storage/tomcat-9/instance2/*.sh
+
+
+ * 방화벽 포트 추가
+firewall-cmd --permanent --zone=public --add-port=8080/tcp
+firewall-cmd --permanent --zone=public --add-port=8181/tcp
+
+firewall-cmd --reload
+more /etc/firewalld/zones/public.xml
+
+systemctl stop firewalld        -- 방화벽 끄기 
+systemctl disable firewalld     -- 리부팅시 방화벽 실행 하지 않게 하기  
+
+
+* 톰켓 로테이트 로그 
+vim /etc/logrotate.d/tomcat1
+
+/storage/tomcat-8/instance1/logs/catalina.out {
+ copytruncate
+ daily
+ rotate 30
+ missingok
+ notifempty
+ dateext
+}
+
+vim /etc/logrotate.d/tomcat2
+
+/storage/tomcat-8/instance2/logs/catalina.out {
+ copytruncate
+ daily
+ rotate 30
+ missingok
+ notifempty
+ dateext
+}
+
+* 옵션 설명
+copytruncate : 기존 파일을 백업해서 다른 파일로 이동하고 기존 파일은 지워버리는 옵션
+daily : 로그파일을 날짜별로 변환
+compress : 지나간 로그파일들을 gzip으로 압축
+dateext : 순환된 로그파일의 날짜확장자
+missingok : 로그파일이 없더라도 오류를 발생시키지 않음
+rotate 30 : 로그 파일은 30개만큼 저장된 다음 제거되거나 메일로 보내짐
+notifempty : 파일의 내용이 없으면 새로운 로그 파일을 생성 안함
+
+
+logrotate 실행 테스트
+logrotate -f /etc/logrotate.d/tomcat1
+
+* 서비스 등록
+http://fruitdev.tistory.com/19
+
+cd /etc/rc.d/init.d/
+
+vim tomcat1
+<--- start
+#!/bin/bash
+# Startup script for the Tomcat Server
+# chkconfig: 345 50 50
+# description: Tomcat is a Web application server.
+# processname: java
+# directory : CATALINA_HOME=/storage/tomcat-8/
+source /etc/profile
+export CATALINA_HOME=/storage/tomcat-8/
+
+echo "Starting tomcat: "
+su - userId -c $CATALINA_HOME/instance1/startup-instance1.sh;
+
+exit 0
+end --->
+
+cp tomcat1 tomcat2
+
+vim tomcat2
+<--- start
+#!/bin/bash
+# Startup script for the Tomcat Server
+# chkconfig: 345 50 50
+# description: Tomcat is a Web application server.
+# processname: java
+# directory : CATALINA_HOME=/storage/tomcat-8/
+source /etc/profile
+export CATALINA_HOME=/storage/tomcat-8/
+
+echo "Starting tomcat: "
+su - newUser -c $CATALINA_HOME/instance2/startup-instance2.sh;
+
+exit 0
+end --->
+
+chown newUser:group tomcat1
+chown newUser:group tomcat2
+
+chmod 755 tomcat1
+chmod 755 tomcat2
+
+chkconfig --add tomcat1
+chkconfig --add tomcat2
+
+chkconfig --list tomcat1
+chkconfig --list tomcat2
+
+
+
+
+* 톰켓 80포트로 띄우기
+리눅스는 기본적으로 1024포트 이하는 루트에서만 활성화 가능하다.
+그래서 톰켓을 8080으로 띄운 후 라우팅 설정을 통해서 활성화 한다.
+iptables가 on 되지 않아도 작동한다. 
+
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+iptables -t nat -L
+
+http://story.cosmossoftwareresearchers.com/103
+
+
+* 톰켓 한글 설정(아래의 세 가지 경우를 확인한다)
+vi /storage/tomcat-8/bin/catalina.sh
+#JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=\"utf-8\""
+
+vi /storage/tomcat-8/instance1/conf/server.xml
+<Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443"
+               URIEncoding="UTF-8"
+               maxThreads="250" />
+
+vi /storage/tomcat-8/instance1/webapps/hangul/WEB-INF/web.xml 
+	<!-- encoding filter -->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  memcached with tomcat
+
+
+
+
+http://www.liquidweb.com/kb/how-to-install-memcached-on-centos-7/
+https://www.lullabot.com/articles/installing-memcached-on-redhat-or-centos
+http://www.bradchen.com/blog/2012/12/tomcat-auto-failover-using-apache-memcached
+http://wordpressxe.tistory.com/8
+http://bosbluebluesky.blogspot.kr/2013/05/central-session-management-tomcat.html
+http://hskimsky.tistory.com/3
+https://github.com/magro/memcached-session-manager/wiki/SetupAndConfiguration
+
+yum -y install memcached
+
+정보보기 
+memcached -h
+
+설정변경
+
+vi /etc/sysconfig/memcached
+PORT=”11211″
+USER=”memcached”
+MAXCONN=”2000″
+CACHESIZE=”4096″
+OPTIONS=””
+
+systemctl restart memcached
+systemctl status memcached
+systemctl start memcached
+systemctl stop memcached
+
+Memcached starts at boot:
+systemctl enable memcached
+
+memcached-tool localhost:11211 stats
+
+memcached -d -u memcached -m 512 -p 11211 127.0.0.1
+memcached -d -u [user] -m [memory size] -p [port] [listening IP]
+
+* Memcached tomcat 연동
+tomcat_dir/lib
+couchbase-client-1.1.4.jar
+javolution-5.4.3.1.jar
+memcached-session-manager-1.9.1.jar
+memcached-session-manager-tc8-1.8.3.jar
+msm-javolution-serializer-1.9.1.jar
+spymemcached-2.11.1.jar
+
+
+single instance
+$CATALINA_HOME/conf/context.xml
+<Manager className="de.javakaffee.web.msm.MemcachedBackupSessionManager"
+    memcachedNodes="n1:localhost:11211"
+    requestUriIgnorePattern=".*\.(ico|png|gif|jpg|css|js)$"
+	transcoderFactoryClass="de.javakaffee.web.msm.serializer.javolution.JavolutionTranscoderFactory"	/>
+	
+
+sticky + multi
+  <Manager className="de.javakaffee.web.msm.MemcachedBackupSessionManager"
+    memcachedNodes="n1:1.201.138.106:11211,n2:1.201.138.98:11211"
+    failoverNodes="n1"
+    requestUriIgnorePattern=".*\.(ico|png|gif|jpg|css|js)$"
+    transcoderFactoryClass="de.javakaffee.web.msm.serializer.javolution.JavolutionTranscoderFactory"
+    />

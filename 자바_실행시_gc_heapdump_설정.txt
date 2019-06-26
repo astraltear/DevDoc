@@ -9,3 +9,31 @@
 -Xloggc:/storage/tomcat-8/instance2/gc.log 
 -XX:+HeapDumpOnOutOfMemoryError 
 -XX:HeapDumpPath=/storage/tomcat-8/instance2/jvm.hprof
+
+gc logger
+-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=30 -XX:GCLogFileSize=10M -Xloggc:/storage/tomcat-8/instance2/gc.log
+
+-XX:+UseGCLogFileRotation : 기본 false, 지정만 하면 바로 true.
+-XX:NumberOfGCLogFiles : 기본 0. Rotate 안 함.
+-XX:GCLogFileSize : 기본 0. Rotate 안 함. 최소 8k 이상.
+
+
+heap dump
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/storage/tomcat-8/instance2/jvm.hprof
+
+
+http://d2.naver.com/helloworld/37111
+-server		서버모드
+-Xmx2048m –Xms2048m			메모리 설정(Heap size를 같은 값으로 하는 것도 growing / shrinking이 불필요한 로드 방지 차원에서 맞습니다. (만일, 시간 당 급격한 접속등이 있다면 변경하는 것이 맞음))
+-XX:NewRatio=3				young generation 이 클수록 minor gc 는 적게 일어난다. 그러나 heap 사이즈의 영역에서 young generation 이 크다는 것은 
+							상대적으로 tenured generation 작다는 것을 의미하므로 major gc 가 자주 일어나게 된다. 
+							young generation 은 NewRatio 값으로 제어할 수 있다. 예를 들어 -XX:NewRatio=3 옵션은 young:tenured 가 1:3 의 비율을  유지한다는 것을 의미한다. 
+							young generation 은 NewSize와 MaxNewSize로 지정할 수 있는데 두 합을 같이하면 Xms, Mmx 를 합한것을 사용하듯이 
+							young generation 의 크기를 정할 수 있다. 
+-XX:MaxNewSize=384m 		Maximum size of new generation
+-XX:MaxPermSize=128m		Perm size를 설정할 필요가 있는 경우가 있습니다. 즉, 제 경험 상 128m는 작고, 256은 큽니다.
+-XX:ParallelGCThreads=2 	GC thread 갯수
+-XX:-UseConcMarkSweepGC		GC 방식 (GC collector를 설정할 필요가 있습니다. Java8은 Default가 parallel 인데 이것은 Full GC가 발생을 하면, WAS가 멈추어집니다.
+							Load balancing처리가 있다면, 문제가 없지, 그렇지 않은 경우 멈추어 보이는 현상이 나타납니다. 따라서, concurrent GC를 같이 사용하기를 권합니다.)
+-XX:-PrintGC -XX:-PrintGCDetails -XX:-PrintGCTimeStamps -Xloggc:mygclogfilename.gc(파일위치 TOMCAT_ROOT/bin/)
+-XX:+DisableExplicitGC		 disable calls to System.gc()

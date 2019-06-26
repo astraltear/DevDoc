@@ -1,0 +1,30 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  ffmpeg
+rpm -Uvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+rpm -ivh https://www.mirrorservice.org/sites/dl.atrpms.net/el7-x86_64/atrpms/stable/atrpms-repo-7-7.el7.x86_64.rpm
+
+vi /etc/yum.repos.d/atrpms.repo
+
+[atrpms]
+baseurl=https://www.mirrorservice.org/sites/dl.atrpms.net/el$releasever-$basearch/atrpms/stable
+enabled=0
+
+yum -y --enablerepo=atrpms install ffmpeg
+ffmpeg -version
+which ffmpeg
+
+https://www.webfoobar.com/node/17
+
+
+ffmpeg 8K 변환
+ffmpeg -i cloth_.wav -acodec pcm_s16le -ac 1 -ar 8000 cloth_8k.wav
+
+파일의 상태 
+ffprobe /record/stt/dialog/2018/10/22/blow_20181022111607_412.wav
+ffprobe -v quiet -print_format json -show_format -show_streams /record/kaldi/blow_20181022151444_952.wav
+
+8K로 파일 변환 
+sox -S /record/kaldi/blow_20181022125520_761.wav /record/kaldi/blow_20181022125520_761_8000.wav rate -L -s 8000
+sox -q  /record/kaldi/blow_20181022125520_761.wav /record/kaldi/blow_20181022125520_761_8000.wav  rate -L -s 8000
+
+

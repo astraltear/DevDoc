@@ -1,0 +1,90 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> subversion
+
+yum -y install subversion
+
+mkdir /storage/Repositories
+
+svnadmin create --fs-type fsfs /storage/Repositories
+
+vi /storage/Repositories/conf/svnserve.conf
+
+[general]
+#인증되지않은(즉 계정이 없는) 사용자에 대해 접근을 거부한다.
+anon-access = none
+
+#인증된 사용자에 대해 쓰기 권한을 준다.
+auth-access = write
+
+#인증된 사용자에 대한 계정 정보(아이디/패스) 정보가 기록된 파일명을 의미한다.(기본값 passwd) 
+password-db = passwd
+
+사용자등록
+vi /storage/Repositories/conf/passwd
+
+사용자 권한
+vi /storage/Repositories/conf/authz
+
+svn시작
+svnserve -d -r /storage/Repositories/
+netstat -atnp | grep svnserve
+
+svn종료
+ps -enf | grep svnserve
+kill -9 
+
+
+
+vi /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 3690 -j ACCEPT
+
+service iptables restart
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gitlab
+
+참고자료 
+	http://cionman.tistory.com/28
+	https://about.gitlab.com/installation/#centos-7
+
+
+sudo yum install curl policycoreutils-python openssh-server
+
+sudo systemctl status sshd -- 확인후 enable이 안 되어 있으면 enable
+sudo systemctl enable sshd 
+sudo systemctl start sshd
+
+
+firewall-cmd --state
+firewall-cmd --permanent --list-all --zone=public
+sudo firewall-cmd --permanent --add-service=http
+firewall-cmd --reload
+
+sudo sudo yum install postfix
+sudo systemctl status postfix 
+sudo systemctl start postfix
+
+curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+sudo yum install gitlab-ce
+
+vim /etc/gitlab/gitlab.rb
+#external_url 'http://gitlab.example.com'
+external_url 'http://192.168.1.104:9080'
+
+
+8080으로 검색 후 아래의 라인 주석 해제 후 포트를 위의 포트와 다른 것으로 변경 
+gitlab_workhorse['auth_backend'] = "http://localhost:9081"
+
+unicorn['listen'] = 'localhost'
+unicorn['port'] = 9081
+
+firewall-cmd --permanent --add-port=9080/tcp 
+firewall-cmd --reload
+
+sudo gitlab-ctl reconfigure
+sudo gitlab-ctl stop|start|restart|status
+
+
+netstat -tnlp하면 아래의 세 개가 뜬다. 9081은 로그인을 한 번 하면 뜨게 된다. 
+9080 nginx
+9081 unicorn
+9090 prometeus

@@ -1,0 +1,61 @@
+vi /etc/yum.repos.d/mongodb-org-3.2.repo
+
+[mongodb-org-3.2]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.2/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.2.asc
+
+
+yum install mongodb-org
+
+
+vi /etc/yum.conf
+exclude=mongodb-org,mongodb-org-server,mongodb-org-shell,mongodb-org-mongos,mongodb-org-tools
+
+
+semanage port -a -t mongod_port_t -p tcp 27017
+/usr/sbin/semanage port -l |grep mongod
+
+
+vi /etc/mongod.conf
+
+service mongod start
+
+시작시 아래와 같은 에러가 발생하면
+Starting mongod (via systemctl):  Job for mongod.service failed because the control process exited with error code. 
+See "systemctl status mongod.service" and "journalctl -xe" for details.
+
+
+grep mongod /var/log/audit/audit.log | audit2allow -M mypol
+semodule -i mypol.pp
+
+
+서비스 상태 확인
+tail -f /var/log/mongodb/mongod.log
+
+
+service mongod start
+service mongod restart
+service mongod stop
+ 
+# 부팅시 자동으로 실행하려면
+chkconfig mongod on
+
+
+vi /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 27017 -j ACCEPT
+service iptables restart
+
+외부에서 접속하게 만들기 
+vi /etc/mongod.conf
+ bindIp: 127.0.0.1,192.168.60.214(localhost, 서버자신의 IP)
+ 
+systemctl restart mongod
+
+references
+http://www.liquidweb.com/kb/how-to-install-mongodb-on-centos-7/
+https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/
+http://yakolla.tistory.com/55
+

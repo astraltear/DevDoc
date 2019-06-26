@@ -1,0 +1,399 @@
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yum 설치 
+
+yum -y install httpd
+httpd -v 
+service httpd start 
+systemctl enable httpd.service  : 서비스 자동 실행 등록 
+설치위치 : /etc/httpd
+
+cd /etc/httpd/conf.modules.d
+grep -irn mod_proxy.so ./
+grep -irn mod_proxy_http.so ./
+grep -irn mod_proxy_balancer.so ./
+grep -irn mod_slotmem_shm.so ./
+grep -irn mod_lbmethod_byrequests.so ./
+
+
+vim /etc/httpd/conf/httpd.conf
+
+ServerName 192.168.60.9:80
+
+<IfModule proxy_module> 
+	ProxyRequests Off
+	ProxyPreserveHost On
+	
+	ProxyPass / balancer://mycluster/ 
+	ProxyPassReverse / balancer://mycluster/ 
+
+	<Proxy balancer://mycluster> 
+		BalancerMember http://192.168.60.9:8080 route=server1 retry=0 loadfactor=50
+		BalancerMember http://192.168.60.9:8181 route=server2 retry=0 loadfactor=50
+	</Proxy> 
+</IfModule>
+
+
+vi /etc/httpd/conf/httpd.conf
+ErrorLog "|/usr/sbin/rotatelogs /storage/logs/apache_error_log.%Y-%m-%d 86400 +540"
+CustomLog "|/usr/sbin/rotatelogs /storage/logs/apache_access_log.%Y-%m-%d 86400 +540" common
+
+
+service httpd configtest    -- 아파치 설정파일 구문 및 동작검사
+service httpd restart
+
+https 구동을 위한 설치
+yum install mod_ssl openssl
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 소스 설치 
+
+설치위치 : /usr/local/apache2.4
+
+wget http://apache.tt.co.kr//httpd/httpd-2.4.18.tar.gz
+wget http://apache.tt.co.kr//apr/apr-1.5.2.tar.gz
+wget http://apache.tt.co.kr//apr/apr-util-1.5.4.tar.gz
+wget https://sourceforge.net/projects/pcre/files/pcre/8.37/pcre-8.37.tar.gz
+
+cd /usr/local/src
+tar -zxvf apr-1.5.2.tar.gz
+tar -zxvf apr-util-1.5.4.tar.gz
+tar -zxvf httpd-2.4.18.tar.gz
+tar -zxvf pcre-8.37.tar.gz
+
+mv apr-1.5.2 ./httpd-2.4.18/srclib/apr
+mv apr-util-1.5.4 ./httpd-2.4.18/srclib/apr-util
+
+cd /usr/local/src/pcre-8.37
+./configure
+make
+make install
+
+
+cd /usr/local/src/httpd-2.4.18
+
+./configure --prefix=/usr/local/apache2.4
+make
+make install
+
+./configure --prefix=/usr/local/apache2.4 --with-included-apr --enable-ssl --with-ssl=/usr/bin/openssl
+    
+make
+make install
+
+또는 아래의 방법으로 설정
+
+./configure --prefix=/usr/local/apache_multi_web --sysconfdir=/usr/local/apache_multi_web/conf/ \
+--with-apr=/usr/local/apr/bin/apr-1-config --with-apr-util=/usr/local/apr/bin/apu-1-config \
+--with-pcre --with-libxml2 --with-ssl --with-z \
+--with-mpm=worker \
+--enable-mods-shared=all \
+--enable-file-cache --enable-cache \
+--enable-so \
+--enable-mime-magic --enable-expires --enable-header \
+--enable-ssl \
+--enable-mpms-shared=all \
+--enable-vhosts-alias --enable-rewrite
+ 
+make && make install
+
+--prefix=/usr/local/apache2에 있는대로 /usr/local/apache2가 아파치 홈 폴더가 된다.
+configure: error: Cannot use an external APR-util with the bundled APR 오류 발생하면[2] ./configure --prefix=/usr/local/httpd --with-included-apr를 해보자.
+
+
+APACHE_HOME/bin/httpd -k start 
+/usr/local/apache2.4/bin/apachectl start
+/usr/local/apache2.4/bin/apachectl restart
+
+컴파일된 세팅값 확인
+/usr/local/apache2.4/bin/apachectl -V
+
+동시접속자수 늘리기 (동시접속자수 계산하기(밑부분) : https://blog.lael.be/post/73)
+vi /usr/local/apache2.4/conf/httpd.conf
+/conf/extra/httpd-mpm.conf 주석삭제
+
+vi /usr/local/apache2.4/conf/extra/httpd-mpm.conf
+
+<IfModule mpm_event_module>
+    ServerLimit           2000
+    StartServers            20
+    MinSpareThreads         75
+    MaxSpareThreads        250
+    ThreadsPerChild         25
+    MaxRequestWorkers      400
+    MaxConnectionsPerChild   0
+</IfModule>
+
+vi /APACHE_HOME/conf/httpd.conf
+ErrorLog "|/usr/local/apache2.4/bin/rotatelogs /usr/local/apache2.4/logs/error_log.%Y-%m-%d 86400 +540"
+CustomLog "|/usr/local/apache2.4/bin/rotatelogs /usr/local/apache2.4/logs/access_log.%Y-%m-%d 86400 +540" common
+
+/usr/local/apache2.4/bin/apachectl restart
+
+vi /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+
+접속자수 확인
+ps aux | grep httpd | wc -l 
+
+* 서비스 등록
+
+cp /usr/local/apache2.4/bin/apachectl /etc/init.d/httpd
+vi /etc/init.d/httpd
+
+
+#!/bin/sh 밑에 추가 5줄
+
+# chkconfig: 2345 90 90
+# description: init file for Apache server daemon
+# processname: /usr/local/apache2.4/bin/apachectl
+# config: /usr/local/apache2.4/conf/httpd.conf
+# pidfile: /usr/local/apache2.4/logs/httpd.pid
+
+
+chkconfig --add httpd 
+chkconfig --list | grep httpd
+chkconfig httpd on
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  redirect
+
+vi /usr/local/apache2.4/conf/httpd.conf
+	LoadModule rewrite_module modules/mod_rewrite.so  주석해제
+
+	DocumentRoot "/usr/local/apache2.4/htdocs"
+	<Directory "/usr/local/apache2.4/htdocs">
+		Options Indexes FollowSymLinks
+		AllowOverride All
+
+document root에 .htaccess 파일 생성
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_USER_AGENT} "android|blackberry|googlebot-mobile|iemobile|ipad|iphone|ipod|opera mobile|palmos|webos" [NC]
+  RewriteRule ^$ http://www.google.com [L,R=302]
+</IfModule>
+
+https://www.howtoforge.com/apache2-how-to-redirect-users-to-mobile-or-normal-web-site-based-on-device-using-mod_rewrite
+http://duellist.tistory.com/97
+http://iwithjoy.tistory.com/entry/%EC%95%84%ED%8C%8C%EC%B9%98-%EB%AA%A8%EB%93%88-modrewrite-%EC%84%A4%EC%A0%95
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  https
+
+conf/http.conf
+Include conf/extra/httpd-ssl.conf	주석해제
+LoadModule ssl_module modules/mod_ssl.so 주석해제
+
+vi /usr/local/apache2.4/conf/ssl/ssl_pass
+#!/bin/sh
+echo password
+
+chmod 755 /usr/local/apache2.4/conf/ssl/ssl_pass
+
+위의 설치방법대로 하면 mod_ssl.so 파일과 위의 라인이 없다. 라인은 복사를 하면 되나 mod_ssl.so파일은 동일한 환경에 구성된 곳에서 받아와야 한다.
+
+Listen 443
+
+
+AddType application/x-x509-ca-cert .crt
+AddType application/x-pkcs7-crl    .crl
+
+SSLPassPhraseDialog exec:/usr/local/apache2.4/conf/ssl/ssl_pass
+
+SSLSessionCache        none
+SSLSessionCacheTimeout  300
+
+Mutex sysvsem default
+
+
+<VirtualHost _default_:443>
+
+DocumentRoot "/usr/local/apache2.4/htdocs"
+ServerName wstage.server.com:443
+ServerAdmin help@server.com
+ErrorLog "|/usr/local/apache2.4/bin/rotatelogs /usr/local/apache2.4/logs/ssl_error_log.%Y-%m-%d 86400 +540"
+TransferLog "|/usr/local/apache2.4/bin/rotatelogs /usr/local/apache2.4/logs/ssl_access_log.%Y-%m-%d 86400 +540"
+
+
+SSLEngine on
+
+SSLProtocol all -SSLv2
+
+SSLCipherSuite HIGH:MEDIUM:!aNULL:!MD5:!RC4
+
+SSLCertificateFile "/usr/local/apache2.4/conf/ssl/www_server_com_cert.pem"
+SSLCertificateKeyFile "/usr/local/apache2.4/conf/ssl/key.pem"
+SSLCertificateChainFile "/usr/local/apache2.4/conf/ssl/Chain_RootCA_Bundle.crt"
+
+<FilesMatch "\.(cgi|shtml|phtml|php)$">
+    SSLOptions +StdEnvVars
+</FilesMatch>
+<Directory "/usr/local/apache2.4/cgi-bin">
+    SSLOptions +StdEnvVars
+</Directory>
+
+BrowserMatch "MSIE [2-5]" \
+         nokeepalive ssl-unclean-shutdown \
+         downgrade-1.0 force-response-1.0
+
+CustomLog "|/usr/local/apache2.4/bin/rotatelogs /usr/local/apache2.4/logs/ssl_request_log.%Y-%m-%d 86400 +540" \
+          "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+<IfModule proxy_module>
+	ProxyRequests Off
+	ProxyPreserveHost On
+
+	ProxyPass / balancer://mycluster/
+	ProxyPassReverse / balancer://mycluster/
+
+	<Proxy balancer://mycluster>
+			BalancerMember http://1.1.1.48:8080 route=server3 retry=0 loadfactor=50
+			BalancerMember http://1.1.1.48:8181 route=server4 retry=0 loadfactor=50
+	</Proxy>
+</IfModule>
+
+</VirtualHost>
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> VirtualHost
+
+
+https://httpd.apache.org/docs/2.4/ko/vhosts/examples.html
+http://joont.tistory.com/46
+
+
+http.conf
+Include conf/extra/httpd-vhosts.conf  주석제거
+
+
+http.conf에 있는 내용을 삭제하고 vhosts.conf 파일로 이동한다. 
+conf/extra/httpd-vhosts.conf 아래 내용 추가
+<VirtualHost *:80>
+    ServerName wstage.server.com
+    DocumentRoot "/usr/local/apache2.4/htdocs"
+
+        <IfModule proxy_module>
+                ProxyRequests Off
+                ProxyPreserveHost On
+
+                ProxyPass / balancer://mycluster/
+                ProxyPassReverse / balancer://mycluster/
+
+                <Proxy balancer://mycluster>
+                        BalancerMember http://1.201.137.48:8080 route=server3 retry=0 loadfactor=50
+                        BalancerMember http://1.201.137.48:8181 route=server4 retry=0 loadfactor=50
+                </Proxy>
+         </IfModule>
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName mstage.server.com
+    DocumentRoot "/usr/local/apache2.4/htdocs"
+
+        <IfModule proxy_module>
+                ProxyRequests Off
+                ProxyPreserveHost On
+
+                ProxyPass / balancer://mycluster/
+                ProxyPassReverse / balancer://mycluster/
+
+                <Proxy balancer://mycluster>
+                        BalancerMember http://1.201.137.47:8080 route=server1 retry=0 loadfactor=100
+                </Proxy>
+         </IfModule>
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName apistage.server.com
+    DocumentRoot "/usr/local/apache2.4/htdocs"
+
+        <IfModule proxy_module>
+                ProxyRequests Off
+                ProxyPreserveHost On
+
+                ProxyPass / balancer://mycluster/
+                ProxyPassReverse / balancer://mycluster/
+
+                <Proxy balancer://mycluster>
+                        BalancerMember http://1.201.137.47:8181 route=server2 retry=0 loadfactor=100
+                </Proxy>
+         </IfModule>
+</VirtualHost>
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AJP
+ mod_jk  모듈 추가 해야함
+ 
+
+	/etc/httpd/conf.d/uriworkermap.porperties
+	/uapi/*= balancer
+	
+	/etc/httpd/conf.d/workers.properties
+	worker.list=balancer
+
+	worker.balancer.type=lb
+	worker.balancer.sticky_session=0
+	worker.balancer.balance_workers=worker1,worker2
+
+	worker.worker1.type=ajp13
+	worker.worker1.host=172.16.0.101
+	worker.worker1.port=8009 
+	worker.worker1.lbfactor=50
+	worker.worker1.ping_timeout=1000
+	worker.worker1.connect_timeout=10000
+	worker.worker1.prepost_timeout=10000
+	worker.worker1.socket_timeout=10
+	worker.worker1.reply_timeout=300000 
+
+	worker.worker2.type=ajp13
+	worker.worker2.host=172.16.0.102
+	worker.worker2.port=8009 
+	worker.worker2.lbfactor=50
+	worker.worker2.ping_timeout=1000
+	worker.worker2.connect_timeout=10000
+	worker.worker2.prepost_timeout=10000
+	worker.worker2.socket_timeout=10
+	worker.worker2.reply_timeout=300000 
+
+	
+WebSocket  설정방법(apache 2.4.5 이상)
+
+	httpd.conf 파일 수정
+
+	LoadModule proxy_module modules/mod_proxy.so
+	LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so	
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> https proxy
+
+httpd.conf 파일 수정
+ajp, mod_jk는 설정하지 않는다. 둘은 같은 설정에서 작동하지 않는다.
+
+
+	<VirtualHost *:443>
+
+		SSLEngine on
+		SSLCertificateFile /data/minds/ssl/STAR.ideepstudy.com.crt
+		SSLCertificateKeyFile /data/minds/ssl/STAR.ideepstudy.com.key
+		ServerAdmin ai.ideepstudy.com
+		DocumentRoot /var/www/html
+		ServerName ai.ideepstudy.com
+		ErrorLog logs/ssl_starkapin_com_error_log
+		CustomLog logs/ssl_starkapin_com_error_log common
+		
+		SSLProxyEngine On
+		#RewriteEngine On
+		#RewriteCond %{HTTP:Upgrade} !=websocket [NC] 
+		#RewriteRule /(.*) https://172.16.0.101:8080/$1 [P,L] 
+
+		ProxyRequests Off
+
+		ProxyPass /uapi/ balancer://mycluster/
+		ProxyPassReverse /uapi/ balancer://mycluster/
+
+		<Proxy balancer://mycluster>
+			BalancerMember wss://172.16.0.101:8080/uapi/ route=server1 retry=0 loadfactor=50
+			BalancerMember wss://172.16.0.102:8080/uapi/ route=server2 retry=0 loadfactor=50
+		</Proxy>
+	</VirtualHost>
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

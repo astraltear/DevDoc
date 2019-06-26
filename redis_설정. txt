@@ -1,0 +1,70 @@
+컨피그 파일 : /etc/redis/6379.conf
+
+설치 디렉터리
+/var/lib/redis/6379
+
+로그파일 위치 
+tail -f /var/log/redis_6379.log  
+
+rdb 파일명
+/var/lib/redis/6379/dump.rdb
+
+AOF 세팅
+appendonly no
+appendfilename "appendonly.aof"
+appendfsync everysec
+
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+
+
+스타트 쉘
+/etc/init.d/redis_6379 [status|stop|start|restart]
+
+실행 및 테스트 
+redis-cli or redis-cli --raw(UTF-8캐릭터 정상적으로 보임 )
+set foo bar
+get foo
+keys *
+del [key]
+flushall
+
+
+ping test
+/usr/local/bin/redis-cli ping
+
+aof방식 수동 파일 저장
+redis-cli
+127.0.0.1:6379> BGREWRITEAOF
+
+127.0.0.1:6379> info persistence
+
+
+rdb방식 수동 파일 저장
+redis-cli
+127.0.0.1:6379> BGSAVE
+
+백업 상태정보
+127.0.0.1:6379> info persistence
+# Persistence
+loading:0
+rdb_changes_since_last_save:0
+rdb_bgsave_in_progress:0		현재 Rewrite가 진행중임을 나타냄  
+rdb_last_save_time:1469689402	지난 번 RDB 파일 저장 시간
+rdb_last_bgsave_status:ok		지난 번 RDB 파일 저장 성공 여부 
+rdb_last_bgsave_time_sec:0		지난 번 RDB 파일 저장에 걸린 시간  
+rdb_current_bgsave_time_sec:-1
+aof_enabled:0					AOF 기능이 활성화 되어 있음: redis.conf 에 appendonly yes 일때  
+aof_rewrite_in_progress:0		현재 rewrite가 진행중임을 나타낸다. 아닐때는 0  
+aof_rewrite_scheduled:0
+aof_last_rewrite_time_sec:-1	지난 번 rewrite 하는데 걸린 시간  
+aof_current_rewrite_time_sec:-1	새 파일에 rewrite 를 시작하고 현재까지 경과 시간  
+aof_last_bgrewrite_status:ok	지난 번 rewrite 상태  
+aof_last_write_status:ok
+
+
+http://www.redisgate.com/redis/configuration/persistence.php
+http://yakolla.tistory.com/41
+http://blog.box.kr/?p=675
+https://www.lesstif.com/pages/viewpage.action?pageId=23757257

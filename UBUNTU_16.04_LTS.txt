@@ -1,0 +1,402 @@
+업데이트 및 설치
+apt-get update 
+apt-get upgrade
+
+>>>>> 패키지 설치 
+sudo apt-get install 패키지이름
+dpkg -i 패키지.deb
+
+apt-get --reinstall install 패키지이름(패키지 재설치 )
+
+설치된 패키지 리스트
+dpkg -l     (소문자 L 임)
+dpkg -l openssh-server
+dpkg -l | grep ssh
+
+설치된 패키지에 포함된 파일들 보기
+dpkg -L openssh-server
+
+deb 파일 패키지에 포함된 파일들 보기
+dpkg -c 패키지.deb
+
+deb 파일 정보 보기
+$ dpkg -I 패키지.deb
+
+
+파일이 포함된 패키지 이름 알아내기
+$ dpkg -S /usr/sbin/sshd
+
+
+sudo apt-get remove 패키지이름 ( 설정 파일은 지우지 않는다)
+sudo apt-get --purge remove 패키지이름 ( 설정 파일 삭제 )
+dpkg --remove 패키지명
+dpkg --purge 패키지명
+
+
+패키지 검색
+sudo apt-cache  search 패키지이름
+sudo apt-cache search mysql-server*
+
+패키지 정보보기
+sudo apt-cache show 패키지이름
+
+apt-get
+	Commands:
+	   update - 새 패키지 목록 가져오기
+	   upgrade - 업그레이드 실행
+	   install - 새 피키지 설치 (패키지 이름은 확장자를 제외함)
+	   remove - 패키지 제거
+	   autoremove - 사용하지 않는 모든 패키지를 자동으로 제거
+	   purge - 패키지와 설정 파일을 함께 제거
+	   source - 소스 압축 파일 다운로드
+	   build-dep - 소스 패키지의 빌드 의존성 설정
+	   dist-upgrade - 배포판 업그레이드, apt-get(8) 페이지 확인
+	   dselect-upgrade - dselect 선택 따르기
+	   clean - 다운로드한 압축 파일 지우기
+	   autoclean - 다운로드한 압축 파일 중 오래된 것 지우기
+	   check -의존성이 깨진 패키지를 확인합니다
+	   changelog - 주어진 패키지의 바뀐 내용 목록을 다운로드한 후 표시
+	   download - 현재 디렉터리로 바이너리 패키지 다운로드
+
+
+>>>>> 패키지가 제대로 설치되지 않을 때 
+sudo apt-get autoremove
+sudo apt-get --purge remove && sudo apt-get autoclean
+sudo apt-get -f install
+
+>>>>> home profie
+~/.bashrc
+source ~/.bashrc
+
+>>>>> 루트 계정 활성화
+sudo passwd root
+
+>>>>> time zone 설정
+sudo dpkg-reconfigure tzdata
+ 
+>>>>> vi 컬러변경
+기본 vi의 코멘트는 dark blue이고 거의 보이지 않는다.
+그래서 아래와 같이 변경함
+vi /home/test/.vimrc
+:color desert
+
+
+>>>>> 버전확인
+cat /etc/issue
+
+>>>>> 네트워크 설정
+sudo vi /etc/network/interfaces
+sudo /etc/resolv.conf
+
+sudo service networking restart
+
+
+>>>>> 언어 설정 변경
+sudo vi etc/default/locale
+
+LANG="en_US.UTF-8"
+LANGUAGE="en_US:en"
+
+LANG="ko_KR.UTF-8"
+LANGUAGE="ko_KR:ko:en_US:en"
+
+변경사항 적용
+source /etc/default/locale
+
+설정확인
+locale
+echo $LANG 
+
+
+>>>>> 시간동기화
+sudo apt-get install ntp
+sudo vi /etc/ntp.conf
+
+server time.bora.net
+server time.kornet.net
+server 0.kr.pool.ntp.org
+server 0.asia.pool.ntp.org
+server 2.asia.pool.ntp.org
+
+
+<<########## SSH설치  ##########>>
+sudo apt-get install ssh
+sudo vim /etc/ssh/sshd_config
+sudo /etc/init.d/ssh restart or service sshd restart
+netstat -ntl or service sshd status
+
+
+<<########## iptables 설정  ##########>>
+특이하게 iptable설정이 파일에 기록되어 있지 않다.(centos: /etc/sysconfig/iptables)
+
+sudo service ufw restart
+sudo service ufw stop
+sudo service ufw start
+
+<<########## VSFTP설치  ##########>>
+wget http://us.archive.ubuntu.com/ubuntu/pool/main/v/vsftpd/vsftpd_3.0.2-1ubuntu2_amd64.deb
+sudo dpkg -i vsftpd_3.0.2-1ubuntu2_amd64.deb
+sudo dpkg -r vsftpd_3.0.2-1ubuntu2_amd64.deb or sudo dpkg -P vsftpd_3.0.2-1ubuntu2_amd64.deb
+
+sudo vi /etc/vsftpd.conf
+
+	# anonymous 유저 사용 불가
+	anonymous_enable=NO
+
+	# 계정사용자 접속 가능
+	local_enable=YES
+
+	# 업로드 가능
+	write_enable=YES
+
+	# 디렉토리나 파일 생성시 umask 값
+	local_umask=022
+	
+	# chroot 적용
+	# 아래와 같은 설정을 할 경우 사용자들은 자신의 계정에서 상위 디렉토리로 이동할수 없게된다.
+	chroot_local_user=YES
+	allow_writeable_chroot=YES
+
+	
+
+	
+# 특정 사용자만을 Jail 설정할 경우
+# chroot_list에 등록되어있는 계정에만 chroot가 적용
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd/chroot_list
+
+# 특정 사용자를 제외한 나머지 사용자만을 Jail 설정할 경우
+# chroot_list에 등록된 계정을 제외한 나머지가 자신의 계정에 chroot가 걸림
+chroot_local_user=YES
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd/chroot_list
+
+# 계정마다 동적으로 설정할 경우
+# 아래와 같이 설정을 하게 되면 /etc/passwd 파일을 참고하여 jail 설정을 할 수 있게 됨
+# /etc/passwd 파일을 수정하여 경로에 .을 찍게 되면 그 지점이 chroot지점이 됨
+# theeye:x:600:100::/home/./theeye:/bin/bash
+chroot_local_user=YES
+passwd_chroot_enable=YES
+
+sudo service vsftpd restart
+
+별도로 설정을 변경해주지 않는 이상 FTP user를 이용해 ssh 접속이 가능하다는 보안 상의 문제가 있다. 
+FTP user로부터의 ssh 접속을 차단하기 위해서는 다음과 같이 약간의 설정 수정이 필요하다.
+sudo vi /etc/passwd
+FTP username이 포함된 행에서 마지막 부분을 /bin/bash에서 /bin/false로 변경 후 저장
+sudo vi /etc/pam.d/vsftpd
+마지막 줄 comment 처리
+
+sudo service vsftpd restart
+
+<<########## JDK설치  ##########>>
+
+sudo dpkg -l | grep openjdk
+sudo apt-get purge openjdk*
+
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+
+설치위치
+/usr/lib/jvm/java-8-oracle/
+
+## gz설치하기 
+sudo su
+
+mkdir /opt/jdk
+
+tar -zxvf jdk-8u73-linux-x64.tar.gz -C /opt/jdk
+
+update-alternatives --install /usr/bin/java java /opt/jdk/jdk1.8.0_73/bin/java 100
+update-alternatives --install /usr/bin/javac javac /opt/jdk/jdk1.8.0_73/bin/javac 100
+
+update-alternatives --display java
+update-alternatives --display javac
+
+java -version
+javac -version
+
+https://www.digitalocean.com/community/tutorials/how-to-manually-install-oracle-java-on-a-debian-or-ubuntu-vps
+
+## rpm 설치 추천하지 않는다
+http://download.oracle.com/otn/java/jdk/8u77-b03/jdk-8u77-linux-x64.rpm
+
+우분투에 rpm 으로 된걸 설치할려면 alien 이라는게 필요하다.
+sudo apt-get install alien
+
+rpm to deb(시간이 좀 걸린다)
+sudo alien -d jdk-7u9-linux-x64.rpm
+ 
+# 설치
+sudo dpkg -i jdk_1.7.009-1_amd64.deb 
+
+설치위치
+/usr/java/jdkxxxx
+
+이렇게 설치할 경우 javac, java가 정상적으로 구동되지 않는다.
+원인은 JAVA_HOME/jre/lib/rt.jar가 없고 rt.pack 파일들만 존재한다.
+이 놈을 rt.jar로 변환을 해줘야 한다.
+/usr/java/jdk1.8.0_77/bin/javac -version
+Error occurred during initialization of VM
+
+sudo vi convert.sh
+sudo chmod 777 ./convert.sh
+sudo ./convert.sh
+--------------------------------------
+#!/bin/sh
+JH=${JAVA_HOME:-"/usr/java/jdk1.8.0_77/jre"}
+UNPACK_EXE=$JH/bin/unpack200
+if [ -f $UNPACK_EXE ]; then
+chmod +x $UNPACK_EXE
+
+PACKED_JARS="lib/rt.jar lib/jsse.jar lib/charsets.jar lib/ext/localedata.jar lib/plugin.jar lib/javaws.jar lib/deploy.jar"
+for i in $PACKED_JARS; do
+srcFile=${JH}/`dirname $i`/`basename $i .jar`.pack
+dstFile=${JH}/$i
+if [ ! -f  $srcFile ]; then
+printf "Error: Unable to find %s. Please, check out your installation.\n" $srcFile
+exit 1
+fi
+$UNPACK_EXE $srcFile $dstFile
+if [ ! -f  $dstFile ]; then
+printf "Error: unpack could not create %s. Please refer to the Troubleshooting\n" $dstFile
+printf "Section of the Installation Instructions on the download page.\n"
+exit 1
+fi
+
+rm -f $srcFile
+done
+
+else
+printf "Error: unpack command could not be found. Please refer to the \n"
+printf "TroubleShooting Section of the Installation Instructions on \n"
+printf "the download page.\n"
+printf "Please do not attempt to install this archive file.\n"
+exit 2
+fi
+-------------------------------------------------------
+https://community.oracle.com/thread/1317983?start=0&tstart=0
+
+
+
+<<########## TOMCAT 설치 ##########>>
+cd /opt
+
+http://mirror.apache-kr.org/tomcat/tomcat-8/v8.0.33/bin/apache-tomcat-8.0.33.tar.gz
+
+tar -zxvf apache-tomcat-8.0.33.tar.gz
+
+sudo vi /opt/jdk/jdk1.8.0_73/jre/lib/security/java.security
+securerandom.source=file:/dev/./urandom
+
+
+<<########## Apache 설치 ##########>>
+sudo apt-get install apache2
+apache2 -version
+
+설치위치 : /etc/apache2
+
+
+<<########## 아파치 톰켓 연동 ##########>>
+
+sudo apt-get install libapache2-mod-jk
+
+sudo vi /etc/libapache2-mod-jk/workers.properties
+
+workers.tomcat_home=/opt/tomcat-8.0.32
+workers.java_home=/opt/jdk/jdk1.8.0_73
+
+
+sudo vi /opt/tomcat-8.0.32/conf/server.xml
+
+<!-- Define an AJP 1.3 Connector on port 8009 -->
+<Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+
+
+vi /etc/apache2/sites-available/000-default.conf
+
+	JKMount /test/* ajp13_worker  
+	JKMount /* ajp13_worker
+</VirtualHost>
+
+sudo service apache2 restart|stop|start
+sudo /etc/init.d/apache2 restart|stop|start
+sudo apache2ctl start|stop|restart|graceful
+sudo systemctl start apache2
+
+
+<<########## mongodb 3.2.5 ##########>>
+
+<<########## mysql 5.6.29 mysql 5.7.10  ##########>>	
+sudo apt-cache search mysql-server*
+
+
+<<########## postgreSQL 9.5.2 ##########>>
+
+HediSQL
+192.168.60.237:5432
+postgres/postgres
+
+
+sudo apt-get install postgresql
+
+sudo -u postgres psql
+alter user postgres with encrypted password 'postgres';
+
+\q
+
+
+원격접근을 위한 설정파일 수정
+sudo vi /etc/postgresql/9.5/main/postgresql.conf
+
+#listen_addresses = 'localhost' 를 주석 풀고
+listen_addresses = '*' 로 수정.
+
+sudo vi /etc/postgresql/9.5/main/pg_hba.conf
+# IPv4 local connections:
+host    all             all             0.0.0.0/0               trust
+
+
+sudo service postgresql restart
+sudo /etc/init.d/postgresql restart
+
+사용자 생성
+sudo -u postgres createdb -O testUser testUserDB
+sudo -u postgres createuser -D -A -P testUser
+
+
+console로 접속하기
+sudo vi /etc/postgresql/9.5/main/pg_hba.conf
+
+# Database administrative login by Unix domain socket
+local   all             testUser                                md5
+
+service postgresql restart
+
+/usr/lib/postgresql/9.5/bin/psql -U testUser testUserDB
+
+
+mysql: SHOW TABLES
+postgresql: \d
+postgresql: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+
+mysql: SHOW DATABASES
+postgresql: \l
+postgresql: SELECT datname FROM pg_database;
+
+mysql: SHOW COLUMNS
+postgresql: \d table
+postgresql: SELECT column_name FROM information_schema.columns WHERE table_name ='table';
+
+mysql: DESCRIBE TABLE
+postgresql: \d+ table
+postgresql: SELECT column_name FROM information_schema.columns WHERE table_name ='table';
+
+
+mysql:use ocdp
+postgres=# \c ocdp
+
+
+replication  구성
+https://www.digitalocean.com/community/tutorials/how-to-set-up-master-slave-replication-on-postgresql-on-an-ubuntu-12-04-vps

@@ -1,0 +1,438 @@
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> utils
+
+* mysql 설정파일 my.cnf  위치 
+mysqld --verbose --help |grep -A 1 'Default options'
+
+* 리모트 서버 접속 
+mysql -h 아이피 -P 포트번호 -u 사용자 -p
+
+* import/export
+mysqldump -u username -p database_name > data-dump.sql
+mysql -u username -p new_database < data-dump.sql
+
+
+* 루트 패스워드 설정
+mysql> update user set password = password('비밀번호') where user = 'root';
+mysql> flush privileges;
+
+
+* database backup
+vi mysqldump.sh
+#!/bin/sh 
+
+DATE=`date +"%Y%m%d%H%M%S"`
+
+USERNAME="root"
+USERPW="userPW"
+
+DATABASE="dbname"
+
+mysqldump -u$USERNAME -p$USERPW $DATABASE > /storage/mysqlbackup/dbname_${DATE}.sql
+mysqldump -u$USERNAME -p$USERPW --routines --no-create-info --no-data --no-create-db --skip-opt $DATABASE > /storage/mysqlbackup/dbname_only_sp_trigger_function_${DATE}.sql
+
+crontab -e
+0 5 * * * /storage/scripts/mysqldump.sh
+30 5 * * * find /storage/mysqlbackup/*.sql -mtime 6 -exec rm -f {} \;
+
+service crond [status|start|stop|restart]
+
+* 사용자 생성 
+localhost: 내부접근
+%: 외부접근
+
+mysql>create user 'user'@'localhost' identified by 'userpw~';
+mysql>create user 'user'@'%' identified by 'userpw~';
+mysql> use mysql
+mysql> select host,user,password from user;
+
+
+권한생성(위의 접근 계정마다 권한을 생성한다)
+mysql>grant all privileges on *.* to 'user'@'localhost';
+mysql>grant all privileges on *.* to 'user'@'%';
+mysql>flush privileges;
+mysql> show grants for user@'%';
+
+
+* 외부 접속만 가능한 사용자 아이디 추가
+아래와 같이 사용자를 생성하면, SqlGate와 같은 클라이언트 툴로만 DB에 접속할 수 있고, 로컬 쉘에서는 직접 접속이 불가능하다.
+mysql>use mysql
+mysql>create user '아이디'@'%' identified by '비밀번호';
+
+* 로컬 접속만 가능한 사용자 아이디 추가
+아래와 같이 사용자를 생성하면, 로컬 쉘에서만 접속이 가능하다.
+mysql> create user '아이디'@'localhost' identified by '비밀번호';
+
+* 사용자에게 모든 권한 부여
+mysql> grant all privileges on *.* to '아이디'@'%'; 
+
+* 사용자에게 특정 DB를 관리할 수 있는 권한 부여
+mysql> grant all privileges on dbname.* to '아이디'@'%';
+
+* 사용자 확인
+mysql> select user, host from user;
+
+* 전체 권한 사용자 생성 
+mysql>use mysql
+mysql>create user '아이디'@'%' identified by '비밀번호';
+mysql> grant all privileges on *.* to '아이디'@'%'; 
+mysql>flush privileges;
+
+* read only  사용자 생성
+mysql>use mysql
+mysql>create user '아이디'@'%' identified by '비밀번호';
+mysql>grant select on *.* to '아이디'@'%';
+mysql>flush privileges;
+
+* 테이블 엔진 정보 확인
+select table_schema,table_name,engine from information_schema.tables where table_schema='mysql'; 
+select table_schema,table_name,engine from information_schema.tables where table_schema='dbname';
+show engines;
+
+* 바이너리 로그 리스트 확인(master)
+mysql> show binary logs;
+mysql> show master logs;
+ 
+* 바이너리 로그 삭제
+mysql> purge master logs to 'mysql-bin.000010';
+지정된 바이너리 로그 이하의 파일이 삭제됨.
+mysql-bin.000001~0000009 까지 삭제됨.
+
+* monitoring
+
+ yum install epel-release
+ yum install mytop 
+ 
+ vi ~/.mytop
+	host=localhost
+	db=mysql
+	user=root
+	pass=pw~
+	delay=10
+	port=3306
+	socket=
+	batchmode=0
+	color=1
+	idle=2
+	
+ mytop -u root –p
+    
+ ----------<옵션 키>---------------
+d - 특정 디비에 대해서만 보는 경우
+f - 지정된 쓰레드가 실행중인 쿼리를 모두 출력
+h - 간단히 보기
+i - 쉬고있는 쓰레드는 리스트에서 제외
+k - 쓰레드 연결을 종료
+m - 초당 실행 쿼리수 보기
+p - 화면 정지
+q - mytop 종료
+r - FLUSH STATUS 실행
+s - 화면 갱신 시간 설정
+u - 특정 사용자의 쓰레드만 보기
+mytop 설명 : http://blog.naver.com/PostView.nhn?blogId=bomyzzang&logNo=220123436673
+
+
+server status variable
+http://dev.mysql.com/doc/refman/5.6/en/server-status-variables.html
+
+server variable
+http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  8.0
+
+
+
+
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 5.6
+rpm -Uvh http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm
+yum repolist
+yum -y install mysql-community-server
+
+
+systemctl start mysqld
+
+mysql -u root -p
+
+mysql>status
+
+systemctl stop mysqld
+
+mkdir /storage/mysqldata
+cp -R /var/lib/mysql/* /storage/mysqldata
+chown -R mysql:mysql /storage/mysqldata
+
+cp /etc/my.cnf /etc/my.cnf_20160711
+
+vi /etc/my.cnf
+#datadir=/var/lib/mysql
+datadir=/storage/mysqldata
+
+위의 설정 변경이 정상인지 확인
+systemctl start mysqld
+systemctl status mysqld
+systemctl stop mysqld
+
+
+vi /etc/my.cnf
+
+[mysqld] 부분에 add
+port=13306
+character-set-client-handshake=FALSE
+init_connect="SET collation_connection = utf8_general_ci"
+init_connect="SET NAMES utf8"
+character-set-server = utf8
+collation-server = utf8_general_ci
+
+binlog_format=MIXED
+default-storage-engine=INNODB
+slow-query-log=1
+slow_query_log_file=/storage/mysqldata/slow_query_log.log
+long_query_time=10
+
+max_allowed_packet=512M
+
+lower_case_table_names=1
+
+#tunning
+innodb_buffer_pool_size = 16G
+
+
+[mysqldump]
+default-character-set = utf8
+
+
+[mysql]
+default-character-set = utf8
+
+[client]
+default-character-set = utf8
+
+
+systemctl start mysqld
+systemctl status mysqld
+
+
+mysql -u root -p
+
+mysql>use mysql
+mysql>create user '아이디'@'%' identified by '패스워드';
+mysql>grant all privileges on *.* to '아이디'@'%';
+mysql>flush privileges;
+
+
+mysql_secure_installation
+
+mysql -u root -p
+mysql>create database dbname default character set utf8;
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 5.7
+
+http://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/
+
+mysql (5.7 or 5.6) centos7 설치방법
+https://www.linode.com/docs/databases/mysql/how-to-install-mysql-on-centos-7/
+https://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/
+
+
+
+wget http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+rpm -Uvh mysql57-community-release-el7-7.noarch.rpm
+yum install mysql-community-server
+
+MySQL version 5.7 or higher generates a temporary random password in /var/log/mysqld.log after installation.
+grep 'temporary password' /var/log/mysqld.log
+
+mysql_secure_installation
+
+vi /etc/my.cnf
+
+[mysqld]
+ validate_password_policy=LOW
+
+mysql --version
+
+5.7 mysql 패스워드 정책 변경 
+http://xinet.kr/?p=974
+
+설치중  libmysqlclient.so.18 이 놈의 의존성으로 걸리면 아래 처럼 mariadb-libs를 제거한다 
+yum -y remove mariadb-libs
+	
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> master/slave
+
+* MASTER 
+systemctl stop mysqld
+
+vi /etc/my.cnf
+
+[mysqld]
+
+# master replication
+server-id=49
+binlog-do-db=dbname
+log-bin=/storage/mysqldata/mysql-bin
+expire_logs_days=7
+max_binlog_size=1G
+log-bin-trust-function-creators = 1
+
+systemctl start mysqld
+systemctl stop mysqld
+systemctl status mysqld
+
+해당 경로에 log 파일이 생성되어 있는지 확인
+ll /storage/mysqldata
+
+
+Replication 에서 사용할 계정을 생성
+mysql -u root -p
+mysql>use mysql
+
+
+mysql>GRANT REPLICATION SLAVE ON *.* TO 'repl'@'192.168.10.%' IDENTIFIED BY 'replpw';
+
+
+master db상태 확인 
+mysql> show master status \G;
+
+***** SLAVE *****
+vi /etc/my.cnf
+
+[mysqld]
+
+# slave replication
+server-id=50
+replicate-do-db=dbname
+read_only=1
+report-host=mysql-master
+relay_log_purge = TRUE
+
+systemctl start mysqld
+systemctl status mysqld
+
+
+
+
+
+mysql -u root -p
+
+mysql>CHANGE MASTER TO 
+        MASTER_HOST='192.168.10.6'
+        , MASTER_USER='repl'
+        , MASTER_PASSWORD='replpw'
+        , MASTER_PORT = 13306
+        , MASTER_LOG_FILE='mysql-bin.000001'
+        , MASTER_LOG_POS=120
+        , MASTER_CONNECT_RETRY =5;
+
+mysql>start slave;
+mysql>show slave status \G;
+
+
+아래 내용을 확인한다. 
+Slave_IO_State: Waiting for master to send event
+Master_Host: 192.168.10.18
+Master_User: repl
+Master_Port: 13306
+Connect_Retry: 5
+Master_Log_File: mysql-bin.000004
+Read_Master_Log_Pos: 339
+Relay_Log_File: mysqld-relay-bin.000016
+Relay_Log_Pos: 502
+Relay_Master_Log_File: mysql-bin.000004
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
+Replicate_Do_DB: dbname
+
+
+master에서 slave연결 확인
+mysql -u root -p
+mysql>show slave hosts;
+
+
+
+* 덤프할 데이터가 있으면 작업이 필요함 
+MASTER!!
+mysql> flush privileges;
+mysql> flush tables with read lock;  // DB Write 금지
+mysqldump -u root -p user >BackupData.sql
+#mysqldump -u root -p --all-databases --master-data > /root/dbdump.db
+
+procedure, function, trigger 까지 모두 백업하기(옵션 --routines  --trigger)
+mysqldump --routines  --triggers -u유저이름 -p패스워드 DB명 > 백업파일
+
+procedure function trigger만 백업하기
+mysqldump --routines --no-create-info --no-data --no-create-db --skip-opt DB명 > 백업파일
+
+SLAVE!!
+mysql> stop slave;
+mysql> show slave status \G;
+기존테이블 삭제 
+mysql -u root -p dbname < BackupData.sql
+
+MASTER!!
+mysql> show master status;
++------------------+-----------+--------------+------------------+-------------------+
+| File             | Position  | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++------------------+-----------+--------------+------------------+-------------------+
+| mysql-bin.000002 | 608572959 | dbname    |                  |                   |
++------------------+-----------+--------------+------------------+-------------------+
+mysql> unlock tables;  //  DB Write 금지해제
+mysql> quit;
+
+SLAVE!!
+
+
+mysql> CHANGE MASTER TO 
+        MASTER_HOST='1.201.137.56'
+        , MASTER_USER='repl'
+        , MASTER_PASSWORD='repldheldjs'
+        , MASTER_PORT = 13306
+        , MASTER_LOG_FILE='mysql-bin.000002'
+        , MASTER_LOG_POS=608572959
+        , MASTER_CONNECT_RETRY =5;
+
+mysq> start slave;
+mysql> show slave status \G;
+
+* 슬레이브 구동시 에러 스킵
+https://www.howtoforge.com/how-to-skip-certain-errors-in-mysql-replication
+
+stop slave;
+set global sql_slave_skip_counter=1;
+start slave;
+show slave status \G; 
+
+my.cnf
+[mysqld]
+#slave-skip-errors = 1146,1062
+slave-skip-errors = all
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  federated engine
+http://devse.tistory.com/entry/MySQL-DBLink-%EA%B5%AC%ED%98%84%EC%9D%84-%EC%9C%84%ED%95%9C-FEDERATED-%EC%97%94%EC%A7%84-%ED%99%9C%EC%84%B1%ED%99%94-%EB%B0%8F-%ED%85%8C%EC%9D%B4%EB%B8%94-%EC%83%9D%EC%84%B1
+
+mysql -u root -p
+
+mysql>show engines;
+FEDERATED 엔진이 리스트에 있는지 확인한다.
+
+없으면
+mysql> install plugin federated soname 'ha_federated.so';
+
+mysql>show engines;
+
+
+vi /etc/my.cnf
+
+[mysqld]
+federated
+
+
+systemctl stop mysqld
+systemctl start mysqld
+
+mysql>show engines;

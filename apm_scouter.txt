@@ -1,0 +1,91 @@
+JDK 7+ (& JAVA_HOME 환경변수 설정)
+
+https://github.com/scouter-project/scouter
+https://github.com/scouter-project/scouter/blob/master/scouter.document/main/Quick-Start_kr.md
+http://dslee1.blogspot.kr/2016/03/scouter-apm.html
+
+server install
+scouter.agent.tar.gz 
+scouter.server.tar.gz
+
+pc install 
+scouter.client.product-win32.win32.x86.zip
+scouter.client.product-win32.win32.x86_64.zip 
+
+cd /usr/local/src
+wget https://github.com/scouter-project/scouter/releases/download/v0.4.10/scouter.agent.tar.gz
+wget https://github.com/scouter-project/scouter/releases/download/v0.4.10/scouter.server.tar.gz
+
+tar -zxvfz scouter.server.tar.gz
+tar -zxvfz scouter.agent.tar.gz
+
+--------------------------------------------- agent 설치 시작
+cd /usr/local/src/scouter/agent.java/
+cp scouter.agent.jar /usr/local/톰켓설치폴더/lib/
+cd /usr/local/톰켓설치폴더/bin/
+
+vi scouter.conf
+####################
+# Scouter Server IP Address (Default : 127.0.0.1)
+net_collector_ip=127.0.0.1
+
+# Scouter Server Port (Default : 6100)
+net_collector_udp_port=6100
+net_collector_tcp_port=6100
+
+# Scouter Name(Default : tomcat1)
+obj_name=tomcat
+trace_interservice_enabled=true
+####################	
+
+vi catalina.sh
+
+JAVA_HOME="/usr/local/java/"  # /etc/profile에서 설정했다면 안 해도 된다. 
+
+CATALINA_BASE="/usr/local/tomcat-7.0.68/"
+CATALINA_OPTS="$CATALINA_OPTS -javaagent:$CATALINA_BASE/lib/scouter.agent.jar"
+JAVA_OPTS="$JAVA_OPTS -Dscouter.config=/usr/local/tomcat/bin/scouter.conf"
+--------------------------------------------- agent 설치 종료
+
+--------------------------------------------- 서버 설치 시작
+cd /usr/local/src/scouter/
+cp -R server /usr/local/
+cd agent.host
+cp -R ./* /usr/local/server/
+덮어쓴다.
+
+vi /usr/local/server/conf/scouter.conf
+
+# Agent Control and Service Port(Default : TCP 6100) 
+net_tcp_listen_port=6100 
+# UDP Receive Port(Default : 6100) 
+net_udp_listen_port=6100 
+# DB directory(Default : ./database) 
+db_dir=./database 
+# Log directory(Default : ./logs) 
+log_dir=./logs
+
+vi /usr/local/server/startup.sh
+-Xmx512m
+해당 하는 부분을 장비 성능등에 맞게 설정
+Ex) –Xms2048m –Xmx2048m
+
+cd /usr/local/server/
+chmod 700 startup.sh stop.sh host.sh
+
+/usr/local/server/startup.sh		-> client 와 통신하는 서버를 띄운다.
+/usr/local/server/host.sh			-> host server를 모니터링??
+
+/usr/local/server/stop.sh
+
+tail -f /usr/local/server/logsserver-20160415.log
+ps -ef |grep scouter
+ 
+netstat -nlp | grep 6100
+ 
+vi /etc/sysconfig/iptables
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 6100 -j ACCEPT
+service iptables restart
+
+
+--------------------------------------------- 서버 설치 종료

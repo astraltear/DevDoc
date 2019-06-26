@@ -1,0 +1,10 @@
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FTP CONSOLE
+ftp 147.6.34.141
+type binary
+hash
+get 
+mget
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> tracert
+tracert www.google.com
