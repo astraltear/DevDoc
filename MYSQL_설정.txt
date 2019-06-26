@@ -139,10 +139,79 @@ http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  8.0
 
+wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+rpm -ivh mysql80-community-release-el7-3.noarch.rpm
+
+yum list mysql-community-server
+yum install mysql-community-server
+
+systemctl status mysqld
+systemctl start mysqld
+
+mysql_secure_installation
+https://ziumb.tistory.com/107
 
 
+systemctl stop mysqld
+
+mkdir /storage/mysqldata
+cp -R /var/lib/mysql/* /storage/mysqldata
+chown -R mysql:mysql /storage/mysqldata
+
+cp /etc/my.cnf /etc/my.cnf_20190626
+
+vim /etc/my.cnf
+#datadir=/var/lib/mysql
+datadir=/storage/mysqldata
+
+위의 설정 변경이 정상인지 확인
+systemctl start mysqld
+systemctl status mysqld
+systemctl stop mysqld
+
+vim /etc/my.cnf
+
+[mysqld] 부분에 add
+port=13306
+character-set-client-handshake=FALSE
+init_connect="SET collation_connection = utf8_general_ci"
+init_connect="SET NAMES utf8"
+character-set-server = utf8
+collation-server = utf8_general_ci
 
 
+default-storage-engine=INNODB
+slow-query-log=1
+slow_query_log_file=/storage/mysqldata/slow_query_log.log
+long_query_time=10
+
+max_allowed_packet=512M
+
+lower_case_table_names=0
+
+# skip-log-bin
+# disable-log-bin 
+
+[mysqldump]
+default-character-set = utf8
+
+[mysql]
+default-character-set = utf8
+
+[client]
+default-character-set = utf8
+
+systemctl status mysqld
+systemctl start mysqld
+
+mysql -u root -p
+
+mysql>use mysql
+mysql>create user '아이디'@'%' identified by '비밀번호';
+mysql>grant all privileges on *.* to '아이디'@'%';
+mysql>flush privileges;
+
+mysql>create database dbname default character set utf8;
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 5.6
