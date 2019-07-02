@@ -84,7 +84,7 @@ vim /storage/tomcat-9/instance1/conf/server.xml
 
 vim /storage/tomcat-9/instance2/conf/server.xml
 <Server port="8105" shutdown="SHUTDOWN">
-<Connector port="8181" protocol="HTTP/1.1"	connectionTimeout="20000" redirectPort="81443" URIEncoding="UTF-8" maxThreads="250"/>
+<Connector port="8181" protocol="HTTP/1.1"	connectionTimeout="20000" redirectPort="18443" URIEncoding="UTF-8" maxThreads="250"/>
 <Connector port="8109" protocol="AJP/1.3" redirectPort="81443" />
 <Engine jvmRoute="server2" 
 
