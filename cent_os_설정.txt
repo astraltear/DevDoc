@@ -600,6 +600,8 @@ m4 명령어를 사용하여 sendmail.cf 파일 재생성
 #m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
 
 
+systemctl start sendmail
+systemctl enable sendmail
 
 
 
