@@ -582,6 +582,25 @@ hostnamectl set-hostname centos70
 hostname
 
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 메일서버 설정
+yum install sendmail sendmail-cf m4
+
+vim /etc/mail/sendmail.mc
+
+dnl  TRUST_AUTH_MECH(`EXTERNAL DIGEST-MD5 CRAM-MD5 LOGIN PLAIN')dnl
+dnl  define(`confAUTH_MECHANISMS', `EXTERNAL GSSAPI DIGEST-MD5 CRAM-MD5 LOGIN PLAIN')dnl
+
+위에서 아래로 수정 (젤 앞에 dnl 주석만 제거해주면 됨)
+
+TRUST_AUTH_MECH(`EXTERNAL DIGEST-MD5 CRAM-MD5 LOGIN PLAIN')dnl
+define(`confAUTH_MECHANISMS', `EXTERNAL GSSAPI DIGEST-MD5 CRAM-MD5 LOGIN PLAIN')dnl
+
+
+m4 명령어를 사용하여 sendmail.cf 파일 재생성
+#m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
+
+
+
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
