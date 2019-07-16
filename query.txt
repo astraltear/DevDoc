@@ -1,0 +1,176 @@
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MYSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+-- export
+* 구조만 
+mysqldump -uUSER -pPASSWD DB_NAME --no-data > dbname_ddl.sql
+mysqldump -uUSER -pPASSWD --routines --no-create-info --no-data --no-create-db --skip-opt audiensrch > only_sp_trigger_function_.sql
+
+* 전체 
+mysqldump -uUSER -pPASSWD DB_NAME  > dbname_ddl.sql
+
+* 테이블 단위 데이터만 
+mysqldump -uUSER -pPASSWD -t DB_NAME TABLE_NAME > log_tb.sql
+
+* 테이블 단위 
+mysqldump -uUSER -pPASSWD DB_NAME TABLE_NAME > log_tb.sql
+
+-- import 
+mysql -u USER -p  DB_NAME < only_sp_trigger_function_.sql
+
+-- 시간 함수
+select  curdate(), CURTIME() , addtime(  CURTIME(), 60*5);
+select  now()+5;
+select DATE_ADD(now(),INTERVAL 60*5 SECOND), now();
+select now(), DATE_ADD(now(),INTERVAL 50 SECOND)	;
+
+-- 엔진 확인 
+show engines;
+SELECT VERSION();   
+
+
+-- mysql minus query
+
+SELECT DISTINCT m.member_id as uid, m.member_name as uname
+FROM member m
+WHERE (m.member_id, m.member_name) NOT IN
+  (SELECT e.emp_id, e.emp_name FROM emp e);
+
+
+-- substring
+SELECT left("chongmoa.com", 8)	-- 결과 : chongmoa
+SELECT substring("chongmoa.com", 1, 5)		-- 결과 : chong
+SELECT right("chongmoa.com", 7)		-- 결과 : moa.com
+SELECT SUBSTRING_INDEX('www.chongmoa.com', '.', 2);	 -- 결과 : www.chongmoa
+SELECT SUBSTRING_INDEX('www.chongmoa.com', '.', -2);	-- 결과 : chongmoa.com
+
+-- replace
+select REPLACE('/download/cover/KK7020756.jpg', '/download/cover/', '') ;
+select str_to_date(REPLACE('2019-03-12', '-', ''),'%Y%m%d') ;
+
+
+-- date to string
+select concat(DATE_FORMAT(now(), '%Y%m%d' ) ,'000000');
+SELECT  date_format((now() + interval -1 day),'%Y-%m-%d');
+
+-- string to date 날짜 
+SELECT STR_TO_DATE('2019,02,01','%Y,%m,%d');
+select str_to_date('20190114','%Y%m%d') ;
+select str_to_date('2019-01-14','%Y-%m-%d') ;
+
+
+-- 문자열 합치기
+
+SELECT CONCAT('M','Y','S','Q','L');
+select CONCAT_WS('^','M','Y','S','Q','L') ; -- CONCAT_WS(sepator, str1, str2 ...);
+
+-- left padding
+SELECT LPAD('Hellow',10,'**');
+SELECT LPAD(39,7,'0');
+
+
+-- scheduler  확 인  
+
+show events;
+show create event Script1month ;
+
+
+-- 나머지 버리기 
+SELECT floor(318838/1024);
+
+-- 문자열 치환, 숫자를 문자로 
+SELECT REPLACE (CONCAT(round(12277992/60000, 2 )-0.4  ) , '.','/')  ;
+
+
+-- 반올림 
+SELECT  round(3601291/60000,2);
+
+-- 문자열 길이 
+SELECT length(40734451);
+
+SELECT format(123456,'0000000');
+SELECT LPAD(123456,7,'0');
+
+SELECT CONCAT( 'D:\\FTPROOT\\CMS\\ORIGINAL\\CM',  
+					left(LPAD(123456,7,'0'),1) ,
+					'\\ ',
+					substring(LPAD(123456,7,'0'),2,3),
+					'\\CM',
+					LPAD(123456,7,'0'),
+					'.mp3 0s3s6'				
+);
+
+-- 숫자로 변환 
+SELECT CAST('001' AS UNSIGNED);
+
+
+-- 그룹당 순번 매기기 https://blackbull.tistory.com/43   
+SELECT *
+FROM (
+	SELECT t1.pd_id, t1.pd_alias,
+	(CASE @vpdId WHEN t1.pd_id THEN @rownum:=@rownum+1 ELSE @rownum:=1 END) rnum,
+	(@vpdId:=t1.pd_id) vpdId
+	FROM asp_product t1, pd2ix_index_vw t2, (SELECT @vpdId:='', @rownum:=0 FROM DUAL) t3
+	WHERE t1.AP_ID=2017
+	AND t1.Sel <> 0
+	and t1.pd_id = t2.PD_ID
+	AND t1.pd_id IN('7020581','7020570','7020567')
+) z;
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MSSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+/*
+
+(MSSQL) 현재 데이터베이스에 사용자 그룹 또는 역할 이(가) 이미 있습니다
+
+sa계정이 아닌 상위 계정으로 해야 한다.
+각 DB마다 해 줘야 한다.
+
+*/
+EXEC sp_change_users_login 'update_one', 'cms', 'cms'
+
+
+-- yyyymmdd
+select CONVERT(CHAR(8), 정산기준일, 112) from [M4_정산원장] where [출판사ID]=26 and [작품ID] =215;
+
+-- datetime like query 
+
+select convert(varchar(8),getdate(), 112); -- 20190409
+
+select GETDATE() ;
+
+select * from F11_시스템입력헤더 where 정산기준일 between '2019-01-31 00:00:00:000' and '2019-01-31 23:59:59:999' ;
+SELECT *  FROM F11_시스템입력헤더  WHERE  DATEPART(yy, 정산기준일) = 2019 AND    DATEPART(mm, 정산기준일) = 03 AND    DATEPART(dd, 정산기준일) = 10;
+select *  FROM F11_시스템입력헤더  where  convert(varchar(8),정산기준일, 112)='20190331';
+
+
+-- substring
+select left('20180301',6)  -- LEFT(문자열,길이)
+RIGHT(문자열,길이)
+SUBSTRING(문자열,시작자리번호,자를문자수)
+
+--- left padding
+SELECT RIGHT('00000000000' + cast(1234 as varchar), 7);
+
+
+--openquery
+SELECT * FROM OPENQUERY (B2BDB, 'SELECT * FROM audienb2b.asp_master where ap_id="44" ');
+
+
+-- 데이터 비교
+select dbo.GetStrValue('1','1') ;
+
+-- 테이블 제약조건 
+select * from INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
+where table_name = 'M2_정산작품원장';
+
+SELECT * FROM sysobjects WHERE name = 'FK_M2_정산작품원장_M1_정산출판사원장';
+
+-- 테이블 제약조건 상세조회 
+exec SP_HELP M1_정산출판사원장;
+exec SP_HELP M2_정산작품원장;
+
+-- 날짜 함수 
+select substring(CONVERT(VARCHAR(10),DATEADD(mm, +1, '2018-11-30 00:00:00'), 112),1,6)  ;
+
+select CONVERT(VARCHAR(10), dateadd(mm,+1,'2018-11-30 00:00:00'), 23) ;

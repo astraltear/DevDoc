@@ -110,8 +110,9 @@ https://software.naver.com/software/fontList.nhn?categoryId=I0000000#brandId=BRD
 zabbix font directory 찾기
 find / -name fonts
 
+/usr/share/zabbix/assets/fonts/
 
-
+심볼릭 링크 삭제 후 한글이 포함되어 있는 폰트로 변경 
 
 
 windows zip파일은 3.x 버전에 가면 있음 
