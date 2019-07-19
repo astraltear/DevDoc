@@ -22,6 +22,7 @@ select  curdate(), CURTIME() , addtime(  CURTIME(), 60*5);
 select  now()+5;
 select DATE_ADD(now(),INTERVAL 60*5 SECOND), now();
 select now(), DATE_ADD(now(),INTERVAL 50 SECOND)	;
+select curdate(), curtime(),DATE_FORMAT(now(), '%Y%m%d'),DATE_FORMAT(now(), '%H%i%s');
 
 -- 엔진 확인 
 show engines;
@@ -42,6 +43,10 @@ SELECT substring("chongmoa.com", 1, 5)		-- 결과 : chong
 SELECT right("chongmoa.com", 7)		-- 결과 : moa.com
 SELECT SUBSTRING_INDEX('www.chongmoa.com', '.', 2);	 -- 결과 : www.chongmoa
 SELECT SUBSTRING_INDEX('www.chongmoa.com', '.', -2);	-- 결과 : chongmoa.com
+SELECT SUBSTRING_INDEX('darap@naver.com', '@', 1),  concat(SUBSTRING_INDEX('astraltear.serewerw', '@', 1),'**'), SUBSTRING_INDEX('www.mysql.com', '.', 2);
+select locate('@','darap@naver.com'), locate('@','astraltear.serewerw') ;
+select concat(substring('darapnaver.com', 1, (length('darapnaver.com')-2) ),'**') ;
+select TO_BASE64('aerafswerwwer');
 
 -- replace
 select REPLACE('/download/cover/KK7020756.jpg', '/download/cover/', '') ;
@@ -115,6 +120,20 @@ FROM (
 	and t1.pd_id = t2.PD_ID
 	AND t1.pd_id IN('7020581','7020570','7020567')
 ) z;
+
+
+-- 랜던 문자열 만들기
+select concat(
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),
+substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1)
+) as LicensePlaceNumber;
+
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MSSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

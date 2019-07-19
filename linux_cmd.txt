@@ -27,4 +27,10 @@ ffprobe -v quiet -print_format json -show_format -show_streams /record/kaldi/blo
 sox -S /record/kaldi/blow_20181022125520_761.wav /record/kaldi/blow_20181022125520_761_8000.wav rate -L -s 8000
 sox -q  /record/kaldi/blow_20181022125520_761.wav /record/kaldi/blow_20181022125520_761_8000.wav  rate -L -s 8000
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  curl
+curl -X POST  -d '{"loginId": "jkong", "password" : "jkong1213!" ,"patronInfo" : "false"}' http://210.223.104.50​​/pyxis-api/outer-authenticate
 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  openssl 확인
+yum install openssl
+echo | openssl s_client -connect aspservice.audien.com:443

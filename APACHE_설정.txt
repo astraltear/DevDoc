@@ -41,8 +41,91 @@ CustomLog "|/usr/sbin/rotatelogs /storage/logs/apache_access_log.%Y-%m-%d 86400 
 service httpd configtest    -- 아파치 설정파일 구문 및 동작검사
 service httpd restart
 
-https 구동을 위한 설치
+***** https 구동을 위한 설치
 yum install mod_ssl openssl
+
+grep -irn mod_ssl.so /etc/httpd/  -- mod_ssl 확인
+
+mkdir /etc/httpd/ssl
+vim /etc/httpd/ssl/ssl_phrase.sh
+#!/bin/sh
+echo 비밀번호
+
+chmod 700 /etc/httpd/ssl/ssl_phrase.sh
+
+
+인증서 파일 복사(권한 644)
+/etc/httpd/ssl/Chain_RootCA_Bundle.crt
+/etc/httpd/ssl/인증서_cert.pem
+/etc/httpd/ssl/인증서_key.pem
+
+vim conf/httpd.conf
+아래 두 부분 확인
+
+Listen 80
+IncludeOptional conf.d/*.conf
+
+
+vim conf.d/ssl.conf
+
+Listen 443
+
+SSLRandomSeed startup builtin
+SSLRandomSeed connect builtin
+
+SSLCipherSuite HIGH:MEDIUM:!MD5:!RC4
+SSLProxyCipherSuite HIGH:MEDIUM:!MD5:!RC4
+SSLHonorCipherOrder on
+SSLProtocol all -SSLv3
+SSLPassPhraseDialog "exec:/etc/httpd/ssl/ssl_phrase.sh"
+SSLSessionCache none
+
+# SSLSessionCacheTimeout  300
+
+<VirtualHost *:443>
+
+ServerName HTTPS_적용도메인:443
+DocumentRoot "/var/www/html"
+
+SSLEngine on
+SSLCertificateFile "/etc/httpd/ssl/인증서_cert.pem"
+SSLCertificateKeyFile "/etc/httpd/ssl/인증서_key.pem"
+SSLCertificateChainFile "/etc/httpd/ssl/Chain_RootCA_Bundle.crt"
+
+BrowserMatch "MSIE [2-5]" \
+        nokeepalive ssl-unclean-shutdown \
+        downgrade-1.0 force-response-1.0
+
+ErrorLog "|/usr/sbin/rotatelogs /storage/apachelogs/apache_ssl_error_log.%Y-%m-%d 86400 +540"
+CustomLog "|/usr/sbin/rotatelogs /storage/apachelogs/apache_ssl_access_log.%Y-%m-%d 86400 +540" common
+
+
+## tomcat 과 연동된 모듈이 있다면 여기에도 적어줘야 한다.
+<IfModule proxy_module>
+    ProxyRequests Off
+    ProxyPreserveHost On
+
+    ProxyPass / balancer://mycluster/
+    ProxyPassReverse / balancer://mycluster/
+
+    <Proxy balancer://mycluster>
+            BalancerMember http://192.168.10.53:8080 route=server1 retry=0 loadfactor=50
+            BalancerMember http://192.168.10.53:8181 route=server2 retry=0 loadfactor=50
+    </Proxy>
+</IfModule>
+
+</VirtualHost>
+
+
+service httpd configtest    -- 아파치 설정파일 구문 및 동작검사
+service httpd restart
+
+ssl 적용되었는지 체크 사이트 
+https://www.ssllabs.com/ssltest
+
+echo | openssl s_client -connect HTTPS_적용도메인:443 
+echo | openssl s_client -connect HTTPS_적용도메인:443 2>/dev/null | openssl x509 -noout -dates
+
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 소스 설치 
 
