@@ -135,6 +135,9 @@ substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1)
 ) as LicensePlaceNumber;
 
 
+ -- 테이블 정보 보기
+ SHOW CREATE TABLE b2c_user_rcmd_log1;
+
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MSSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 

@@ -294,8 +294,50 @@ source ~/.bashrc
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 메모리, CPU 정보 확인
 free -h
+cat /proc/meminfo
+
 cat /proc/cpuinfo | grep processor
 cat /proc/cpuinfo
+
+
+cat/proc/<PID>/status
+
+
+VmPeak:  4611836 kB		-- 최대할당 가상 메모리 사이즈
+VmSize:  4611588 kB		-- 가상 메모리 사이즈
+VmLck:         0 kB		--  swap out  할 수 없게 고정된 메모리 사이즈
+VmPin:         0 kB		
+VmHWM:   1004456 kB		-- 최대할당 물리 메모리 사이즈
+VmRSS:   1004456 kB		-- 물리 메모리 사이즈
+VmData:  4398740 kB		-- heap 영역 사이즈
+VmStk:       136 kB		-- stack  영역 사이즈 ㅣ
+VmExe:         4 kB		-- 실헹 코드 영역 사이즈
+VmLib:     22352 kB		-- shared library  영역 사이즈
+VmPTE:      2424 kB		-- page table 사이즈 
+VmSwap:        0 kB		-- swap  사이즈 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> swap  파일 만들기
+
+free -m
+
+mkdir /swap
+dd if=/dev/zero of=/swap/swapfile bs=1024 count=4096000
+
+cd /swap
+chmod 0600 swapfile
+mkswap swapfile
+swapon swapfile
+swapon -s
+
+-- 영구적용 
+ vim /etc/fstab
+/swap/swapfile    swap    swap    defaults    1 1
+
+
+** swap 제거
+swapoff swapfile
+rm -rf /swap/swapfile
+/swap/swapfile    swap    swap    defaults    1 1   <-- 주석 처리하거나 지운다.
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 서비스 open 상태확인	
@@ -642,5 +684,15 @@ yum install openssl
 echo | openssl s_client -connect www.domain.com:443
 
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  oom killer 우선순위 조정
+
+/proc/PID/oom_adj 의 파일에 -17 을 입력합니다. oom_adj 는 -17 ~ 15 의 값을 가지며, 낮은 값 일수록 우선순위에서 밀려납니다.
+/proc/PID/oom_score_adj 의 파일에 -1000 을 입력합니다. oom_score_adj 는 -1000 ~ 1000 의 값을 가지며, 낮은 값 일수록 우선순위에서 밀려납니다.
+
+# pidof gmaster
+18907
+
+# echo -17 > /proc/18907/oom_adj
+# echo -1000 > /proc/18907/oom_score_adj
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
