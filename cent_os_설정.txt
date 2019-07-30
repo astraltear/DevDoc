@@ -676,7 +676,13 @@ sox -S /record/kaldi/blow_20181022125520_761.wav /record/kaldi/blow_201810221255
 sox -q  /record/kaldi/blow_20181022125520_761.wav /record/kaldi/blow_20181022125520_761_8000.wav  rate -L -s 8000
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  curl
-curl -X POST  -d '{"loginId": "jkong", "password" : "jkong1213!" ,"patronInfo" : "false"}' http://210.223.104.50​​/pyxis-api/outer-authenticate
+http://blog.naver.com/PostView.nhn?blogId=hanajava&logNo=221475382900&categoryNo=52&parentCategoryNo=0&viewDate=&currentPage=1&postListTopCurrentPage=1&from=postView
+
+
+curl "http://site.com?userId=인코딩된문자열&userPw=인코딩된문자열"
+curl  -X POST -d "userId=인코딩된문자열&userPw=인코딩된문자열" "http://site.com:8088/ssoLogin.php"
+
+
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  openssl 확인

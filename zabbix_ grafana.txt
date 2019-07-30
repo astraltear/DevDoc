@@ -88,6 +88,7 @@ vim /etc/zabbix/zabbix_agentd.conf
 
 ### Zabbix Server IP Address or Hostname ###
 Server=ubuntu.itzgeek.local
+ServerActive=ubuntu.itzgeek.local
 
 ### Client Hostname ###
 Hostname=centos.itzgeek.local
