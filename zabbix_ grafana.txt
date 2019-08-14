@@ -100,8 +100,22 @@ chkconfig zabbix-agent on
 서버와 에이전트 방화벽이 설정되어 있다면  10050,10051 포트 I/O 으로 열어준다
 (서버 -> Agent 통신 시 10051 포트,  Agent -> Server 통신 시 10050 포트)
 
+* agent log 위치
+/var/log/zabbix/zabbix_agentd.log
+
 agent를 실행했다고 해서 바로 데이터가 보이지 않고  agent 를 설정해야 한다.
 http://blog.naver.com/PostView.nhn?blogId=jaechuns&logNo=221218652145
+
+** mysql 모니터링 설정(https://koraykaraman.com/blog/3632/MySQL-Monitoring-on-Zabbix-3-4)
+mkdir /var/lib/zabbix
+vim /var/lib/zabbix/.my.cnf
+
+[client]
+user = 사용자ID
+password = 사용자PW
+port        = mysql포트 
+
+service zabbix-agent restart
 
 
 그래프 한글 깨질 때 
