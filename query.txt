@@ -138,6 +138,28 @@ substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1)
  -- 테이블 정보 보기
  SHOW CREATE TABLE b2c_user_rcmd_log1;
 
+
+ -- 테이블 로우 확인 row
+ 아래의 쿼리는 테이블의 정확한 로우의 숫자가 나오지 않는다.
+ 대략적인 숫자가 나온다.
+SELECT TABLE_NAME,table_rows
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = '디비명'
+ORDER BY TABLE_NAME ASC;
+
+정확한 숫자를 나오려면 아래의 쿼리를 실행한 후에 결과를 쿼리로 다시 실행한다.
+SELECT CONCAT(
+    'SELECT "', 
+    table_name, 
+    '" AS table_name, COUNT(*) AS exact_row_count FROM `', 
+    table_schema,
+    '`.`',
+    table_name, 
+    '` UNION '
+) 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = '디비명';
+
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MSSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -173,6 +195,20 @@ SUBSTRING(문자열,시작자리번호,자를문자수)
 
 --- left padding
 SELECT RIGHT('00000000000' + cast(1234 as varchar), 7);
+
+사용법) REPLICATE(채울문자, 반복횟수)
+채울문자 : 0
+총자릿수 : 5
+반복횟수 : 총 자릿수 - LEN(넣을 문자)
+
+SELECT REPLICATE('0', 5 - LEN('1')) + '1'
+SELECT REPLICATE('0', 5 - LEN('12')) + '12'
+SELECT REPLICATE('0', 5 - LEN('123')) + '123'
+
+* 먄약 숫자 타입인 경우
+SELECT REPLICATE(0, 7 - LEN(1369)) + CONVERT(VARCHAR,1369)
+
+
 
 
 --openquery

@@ -701,4 +701,30 @@ echo | openssl s_client -connect www.domain.com:443
 # echo -17 > /proc/18907/oom_adj
 # echo -1000 > /proc/18907/oom_score_adj
 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  chrome headless 
+vi /etc/yum.repos.d/google-chrome.repo
+
+[google-chrome]
+name=google-chrome
+baseurl=http://dl.google.com/linux/chrome/rpm/stable/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub
+
+yum install google-chrome-stable
+
+google-chrome --version
+
+dom 출력
+/usr/bin/google-chrome --headless --dump-dom https://blog.outsider.ne.kr
+
+pdf 저장
+/usr/bin/google-chrome --headless --print-to-pdf https://blog.outsider.ne.kr
+
+screenshot 저장
+/usr/bin/google-chrome --headless --lang=ko --screenshot --window-size=1280,1696 --user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36" https://blog.outsider.ne.kr
+
+ 
+
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
