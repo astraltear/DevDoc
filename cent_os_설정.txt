@@ -58,6 +58,7 @@ source .bash_profile
 * x에서 y로 심볼릭 링크를 만들어 줌			
 
 ln -s 1.shm ori.shm
+ln -s 원본파일 링크이름
 결과는 아래와 같이 나옴 
 ori.shm -> 1.shm
 
@@ -67,7 +68,9 @@ ln -s alphabet-kor-16000 baseline-kor-16000
 baseline-kor-16000 -> alphabet-kor-16000
 
 rm 으로 삭제 
-
+# 마지막에 /를 붙이면 삭제 불가
+# (주의!) 그렇다고 rm -rf 로 삭제하면 원본이 삭제된다 -r 옵션은 제거
+rm -f directoryName
 
 * 환경변수 반영
 source .bash_profile 

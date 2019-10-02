@@ -480,3 +480,22 @@ ajp, mod_jk는 설정하지 않는다. 둘은 같은 설정에서 작동하지 �
 	</VirtualHost>
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> apache httpd (no pid file) not running
+
+ps aux | grep httpd | grep root or netstat -nltp | grep 80
+
+root     30008  0.0  0.6   6344  3440 ?        Ss   01:52   0:00 /usr/local/apache/bin/httpd
+root     30098  0.0  0.0   1944   484 pts/2    R+   01:59   0:00 grep httpd
+
+
+echo APACHE_PID > /usr/local/apache/logs/httpd.pid
+echo 30008 > /usr/local/apache/logs/httpd.pid
+
+apachectl stop
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+

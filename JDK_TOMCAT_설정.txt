@@ -274,6 +274,21 @@ iptables -t nat -L
 http://story.cosmossoftwareresearchers.com/103
 
 
+* 톰켓  symbolic link  인식시키기
+보안 문제때문에 톰캣은 symbolic  link 인 파일이나 디렉터리는 따라가지 않게 기본 설정
+
+
+Tomcat 폴더/conf/context.xml 안에 
+<Context> 태그가 있다 그 안에 아래와 같이 세팅한다 ( Tomcat 9 )
+<Context>
+    <Resources allowLinking="true" />
+</Context>
+
+
+
+
+
+
 * 톰켓 한글 설정(아래의 세 가지 경우를 확인한다)
 vi /storage/tomcat-8/bin/catalina.sh
 #JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=\"utf-8\""
