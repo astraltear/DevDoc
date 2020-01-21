@@ -53,6 +53,11 @@ select REPLACE('/download/cover/KK7020756.jpg', '/download/cover/', '') ;
 select str_to_date(REPLACE('2019-03-12', '-', ''),'%Y%m%d') ;
 
 
+-- 날짜검색
+datetime 타입일 때 아래와 같이 쿼리.
+WHERE DATE(RegASPDate)='2019-10-07';
+WHERE DATE(post_date) BETWEEN '2012-01-22' AND '2012-01-23';
+
 -- date to string
 select concat(DATE_FORMAT(now(), '%Y%m%d' ) ,'000000');
 SELECT  date_format((now() + interval -1 day),'%Y-%m-%d');
@@ -175,13 +180,14 @@ EXEC sp_change_users_login 'update_one', 'cms', 'cms'
 
 
 -- yyyymmdd
-select CONVERT(CHAR(8), 정산기준일, 112) from [M4_정산원장] where [출판사ID]=26 and [작품ID] =215;
-
--- datetime like query 
-
 select convert(varchar(8),getdate(), 112); -- 20190409
+select convert(varchar(10),getdate(), 23); -- 2019-04-09
 
 select GETDATE() ;
+
+
+
+-- datetime like query 
 
 select * from F11_시스템입력헤더 where 정산기준일 between '2019-01-31 00:00:00:000' and '2019-01-31 23:59:59:999' ;
 SELECT *  FROM F11_시스템입력헤더  WHERE  DATEPART(yy, 정산기준일) = 2019 AND    DATEPART(mm, 정산기준일) = 03 AND    DATEPART(dd, 정산기준일) = 10;
@@ -209,7 +215,8 @@ SELECT REPLICATE('0', 5 - LEN('123')) + '123'
 SELECT REPLICATE(0, 7 - LEN(1369)) + CONVERT(VARCHAR,1369)
 
 
-
+-- nvl
+ISNULL(m6.B2C_ROYALTY_RATE,'0')
 
 --openquery
 SELECT * FROM OPENQUERY (B2BDB, 'SELECT * FROM audienb2b.asp_master where ap_id="44" ');
