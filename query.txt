@@ -239,3 +239,7 @@ exec SP_HELP M2_정산작품원장;
 select substring(CONVERT(VARCHAR(10),DATEADD(mm, +1, '2018-11-30 00:00:00'), 112),1,6)  ;
 
 select CONVERT(VARCHAR(10), dateadd(mm,+1,'2018-11-30 00:00:00'), 23) ;
+
+
+-- 문자열 합치기 
+CONCAT(TITLE,'-',CONTENT)
