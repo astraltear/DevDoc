@@ -1,7 +1,9 @@
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> utils
 * 압축
-tar cvf pds20040910.tar https-pds	
-tar xvf jdk-7u71-linux-x64.tar.gz	
+압축하기
+tar -cvf pds20040910.tar https-pds	
+압축풀기 
+tar -xvf jdk-7u71-linux-x64.tar.gz	
 
 * 사용공간체크
 du -b /home	
@@ -329,7 +331,7 @@ VmSwap:        0 kB		-- swap  사이즈
 free -m
 
 mkdir /swap
-dd if=/dev/zero of=/swap/swapfile bs=1024 count=4096000
+dd if=/dev/zero of=/swap/swapfile bs=1024 count=8192000
 
 cd /swap
 chmod 0600 swapfile
@@ -696,6 +698,18 @@ curl  -X POST -d "userId=인코딩된문자열&userPw=인코딩된문자열" "ht
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  openssl 확인
 yum install openssl
 echo | openssl s_client -connect www.domain.com:443
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  route  정보 확인
+
+route
+또는
+netstat -r
+또는
+ip route
+
+
+traceroute 1.201.137.56
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  oom killer 우선순위 조정

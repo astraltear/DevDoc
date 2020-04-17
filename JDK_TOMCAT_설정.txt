@@ -58,11 +58,13 @@ chown -R user:group ./tomcat-9
 
 mkdir /storage/tomcat-9/instance1
 mkdir /storage/tomcat-9/instance2
+mkdir /storage/tomcat-9/instance3
 
 cd /storage/tomcat-9/
 
 cp -R ./conf ./instance1;cp -R ./logs ./instance1;cp -R ./temp ./instance1; cp -R ./webapps ./instance1; cp -R ./work ./instance1
 cp -R ./conf ./instance2;cp -R ./logs ./instance2;cp -R ./temp ./instance2; cp -R ./webapps ./instance2; cp -R ./work ./instance2
+cp -R ./conf ./instance3;cp -R ./logs ./instance3;cp -R ./temp ./instance3; cp -R ./webapps ./instance3; cp -R ./work ./instance3
 rm -rf ./conf;rm -rf ./logs;rm -rf ./temp;rm -rf ./webapps;rm -rf ./work
 
 cd /home/user
@@ -85,8 +87,14 @@ vim /storage/tomcat-9/instance1/conf/server.xml
 vim /storage/tomcat-9/instance2/conf/server.xml
 <Server port="8105" shutdown="SHUTDOWN">
 <Connector port="8181" protocol="HTTP/1.1"	connectionTimeout="20000" redirectPort="18443" URIEncoding="UTF-8" maxThreads="250"/>
-<Connector port="8109" protocol="AJP/1.3" redirectPort="81443" />
+<Connector port="8109" protocol="AJP/1.3" redirectPort="18443" />
 <Engine jvmRoute="server2" 
+
+vim /storage/tomcat-9/instance3/conf/server.xml
+<Server port="8205" shutdown="SHUTDOWN">
+<Connector port="8282" protocol="HTTP/1.1"	connectionTimeout="20000" redirectPort="18444" URIEncoding="UTF-8" maxThreads="250"/>
+<Connector port="8209" protocol="AJP/1.3" redirectPort="18444" />
+<Engine jvmRoute="server3" 
 
 
 *  시작
