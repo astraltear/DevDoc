@@ -85,7 +85,7 @@ source .bash_profile
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yum 관련 
 yum -y update
 
-fd
+
 yum grouplist   -- yum 그룹 패키지를 설치여부 
 yum  groupinstall "Development Tools"
 yum groupremove "Development Tools"
@@ -251,6 +251,8 @@ http://www.cmsfactory.net/node/11424
 vi /etc/ssh/sshd_config
 Port 22
 PermitRootLogin no (root접속 차단)
+PasswordAuthentication no 를 주석처리하고 
+PasswordAuthentication yes의 주석처리를 해제해
 
 service sshd restart
 

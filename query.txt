@@ -165,6 +165,22 @@ SELECT CONCAT(
 FROM INFORMATION_SCHEMA.TABLES 
 WHERE TABLE_SCHEMA = '디비명';
 
+
+-- 날짜비교
+
+-- 30   31
+SELECT DATEDIFF('2019-02-07', '2019-01-08' );   
+SELECT DATEDIFF('2019-03-08', '2019-02-08' );   
+
+
+-- select update
+UPDATE TABLE1, TABLE2
+SET       TABLE1.COLUMN1 = TABLE2.COLUMN3
+WHERE  TABLE1.COLUMN2 = TABLE2.COLUMN4
+;
+
+
+
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MSSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -243,3 +259,50 @@ select CONVERT(VARCHAR(10), dateadd(mm,+1,'2018-11-30 00:00:00'), 23) ;
 
 -- 문자열 합치기 
 CONCAT(TITLE,'-',CONTENT)
+
+
+-- select update
+
+update cms.dbo.CM3_목차
+set cms.dbo.CM3_목차.IdxDecription= cm2.ClipName
+from cms.dbo.CM3_목차 cm3, cms.dbo.CM2_회차 cm2
+where cm3.BB_ID=17241
+and cm3.ClipID = cm2.ClipID
+;
+
+
+-- primary key foreign key 확인 
+SELECT
+DISTINCT
+Constraint_Name AS [Constraint],
+Table_Schema AS [Schema],
+Table_Name AS [TableName]
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+where Constraint_Name like '%FK_M5_정산매출처%';
+
+
+sELECT OBJECT_NAME(OBJECT_ID) AS NameofConstraint,
+SCHEMA_NAME(schema_id) AS SchemaName,
+OBJECT_NAME(parent_object_id) AS TableName,
+type_desc AS ConstraintType
+FROM sys.objects
+WHERE type_desc IN ('FOREIGN_KEY_CONSTRAINT','PRIMARY_KEY_CONSTRAINT')
+and OBJECT_NAME(OBJECT_ID) like '%FK_M5_정산매출처%';
+
+
+-- minus query
+  select 작업,권한 from  DemonQue.dbo.권한 where 사용자='이지은'
+  except
+  select 작업,권한 from  DemonQue.dbo.권한 where 사용자='양세원';
+
+
+
+
+--  error log 삭제 (C 드라이브의 공간이 없을 때 )
+C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQL2014\MSSQL\Log
+
+Exec sp_cycle_errorlog
+
+https://blog.naver.com/PostView.nhn?blogId=dosz&logNo=221298650428
+http://faq.hostway.co.kr/Windows_DB/1790
+  https://m.blog.naver.com/PostView.nhn?blogId=jevida&logNo=140171497815

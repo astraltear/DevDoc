@@ -43,12 +43,20 @@ yum install ld-linux.so.2
 실행시 지연되면 아래의 내용을 추가한다.(동일한 환경에서도 아래의 케이스가 발생한다.)
 https://jiyeonseo.github.io/2016/08/06/springboot-centos-tomcat-issue/
 
+
+vi $TOMCAT_HOME/bin/setenv.sh
+JAVA_OPTS="$JAVA_OPTS -Djava.security.egd=file:/dev/./urandom"
+
+
 vi $JAVA_HOME/jre/lib/security/java.security
 securerandom.source=file:/dev/urandom
 
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> TOMCAT
+
+tomcat 정보확인(server version,java version, os arch)
+java -cp /storage/tomcat-9/lib/catalina.jar org.apache.catalina.util.ServerInfo
 
 wget http://archive.apache.org/dist/tomcat/tomcat-9/v9.0.19/bin/apache-tomcat-9.0.19.tar.gz
 
