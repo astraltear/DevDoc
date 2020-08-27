@@ -1,5 +1,8 @@
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> utils
 
+* mysql 삭제
+yum remove mysql mysql-server
+
 * mysql 설정파일 my.cnf  위치 
 mysqld --verbose --help |grep -A 1 'Default options'
 
@@ -15,6 +18,13 @@ mysql -u username -p new_database < data-dump.sql
 mysql> update user set password = password('비밀번호') where user = 'root';
 mysql> flush privileges;
 
+* full text searh
+ft_min_word_len = 1
+innodb_ft_min_token_size = 1
+
+* 변수 보기 
+show global VARIABLES;
+show global variables like 'log_bin_trust_function_creators';
 
 * database backup
 vi mysqldump.sh
@@ -139,17 +149,92 @@ http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  8.0
 
+** 8.0 에서는 lower_case_table_names 최초 구동시 세팅하지 않으면 추후 변경되지 않는다.
+아래의 설정값을 모두 입력 후 (my.cnf  ) 구동한다. 
+
+
+wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+rpm -ivh mysql80-community-release-el7-3.noarch.rpm
+
+yum list mysql-community-server
+yum install mysql-community-server
+
+
+mkdir /storage/mysqldata
+cp -R /var/lib/mysql/* /storage/mysqldata
+chown -R mysql:mysql /storage/mysqldata
+
+cp /etc/my.cnf /etc/my.cnf_20190626
+
+vim /etc/my.cnf
+
+[mysqld]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+datadir=/storage/mysqldata
+socket=/var/lib/mysql/mysql.sock
+
+port=13306
+character-set-client-handshake=FALSE
+init_connect="SET collation_connection = utf8mb4_general_ci"
+init_connect="SET NAMES utf8mb4"
+character-set-server = utf8mb4
+collation-server = utf8mb4_general_ci
+
+binlog_format=MIXED
+default-storage-engine=INNODB
+slow-query-log=1
+slow_query_log_file=/storage/mysqldata/slow_query_log.log
+long_query_time=10
+
+max_connections=250
+max_allowed_packet=512M
+
+lower_case_table_names = 1
+event_scheduler = ON 
+
+innodb_buffer_pool_size = 4G
+
+federated
+
+ft_min_word_len = 1
+innodb_ft_min_token_size = 1
+
+log_bin_trust_function_creators=1
+
+
+[mysqldump]
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+service mysqld start
+
+
+기본 패스워드 확인
+ grep 'temporary password' /var/log/mysqld.log
+
+mysql_secure_installation
+https://ziumb.tistory.com/107
+
+
 ** mysql 8.x 인스턴스 연결시 발생하는 authentication plugin 'caching_sha2_password' cannot be loaded 지정된 모듈을 찾을 수 없습니다
 
 문제는 강화된 보안 체계로 인해 외부 어플리케이션에서 사용되는 
 mysql 관련 모듈이 mysql 8.x 의 기본 값으로 설정된 패스워드 보안 알고리즘을 맞추지 못해서 발생
 해결 방법은 여러가지가 있지만 mysql 인스턴스 전체에 영향을 주지 않는 방법으로 사용자 단위로 패스워드 보안 정책을 변경
 
-// mysql 8.x 의 기본 사용자 비밀번호 정책
-caching_sha2_password
-
-// 이슈 해결을 위한 비밀번호 정책
-mysql_native_password
+// mysql 8.x 의 기본 사용자 비밀번호 정책 (caching_sha2_password)
+// 이슈 해결을 위한 비밀번호 정책 (mysql_native_password)
 
 mysql>CREATE USER '유저'@'%' IDENTIFIED WITH mysql_native_password BY '새비밀번호';
 mysql>grant all privileges on *.* to 'migusr'@'%';
@@ -160,74 +245,6 @@ mysql>alter user 대상유저@'%' identified with mysql_native_password by '새�
 
 https://baengsu.tistory.com/21
 https://ondemand.tistory.com/246
-
-
-
-
-wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-rpm -ivh mysql80-community-release-el7-3.noarch.rpm
-
-yum list mysql-community-server
-yum install mysql-community-server
-
-systemctl status mysqld
-systemctl start mysqld
-
-mysql_secure_installation
-https://ziumb.tistory.com/107
-
-
-systemctl stop mysqld
-
-mkdir /storage/mysqldata
-cp -R /var/lib/mysql/* /storage/mysqldata
-chown -R mysql:mysql /storage/mysqldata
-
-cp /etc/my.cnf /etc/my.cnf_20190626
-
-vim /etc/my.cnf
-#datadir=/var/lib/mysql
-datadir=/storage/mysqldata
-
-위의 설정 변경이 정상인지 확인
-systemctl start mysqld
-systemctl status mysqld
-systemctl stop mysqld
-
-vim /etc/my.cnf
-
-[mysqld] 부분에 add
-port=13306
-character-set-client-handshake=FALSE
-init_connect="SET collation_connection = utf8_general_ci"
-init_connect="SET NAMES utf8"
-character-set-server = utf8
-collation-server = utf8_general_ci
-
-
-default-storage-engine=INNODB
-slow-query-log=1
-slow_query_log_file=/storage/mysqldata/slow_query_log.log
-long_query_time=10
-
-max_allowed_packet=512M
-
-lower_case_table_names=0
-
-# skip-log-bin
-# disable-log-bin 
-
-[mysqldump]
-default-character-set = utf8
-
-[mysql]
-default-character-set = utf8
-
-[client]
-default-character-set = utf8
-
-systemctl status mysqld
-systemctl start mysqld
 
 mysql -u root -p
 
@@ -287,7 +304,8 @@ long_query_time=10
 
 max_allowed_packet=512M
 
-lower_case_table_names=1
+lower_case_table_names=1  (대소문자 구분안함)
+event_scheduler = ON 
 
 #tunning
 innodb_buffer_pool_size = 16G

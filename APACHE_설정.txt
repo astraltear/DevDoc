@@ -76,7 +76,7 @@ SSLRandomSeed connect builtin
 SSLCipherSuite HIGH:MEDIUM:!MD5:!RC4
 SSLProxyCipherSuite HIGH:MEDIUM:!MD5:!RC4
 SSLHonorCipherOrder on
-SSLProtocol all -SSLv3
+SSLProtocol ALL -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
 SSLPassPhraseDialog "exec:/etc/httpd/ssl/ssl_phrase.sh"
 SSLSessionCache none
 
@@ -88,6 +88,9 @@ ServerName HTTPS_적용도메인:443
 DocumentRoot "/var/www/html"
 
 SSLEngine on
+
+
+
 SSLCertificateFile "/etc/httpd/ssl/인증서_cert.pem"
 SSLCertificateKeyFile "/etc/httpd/ssl/인증서_key.pem"
 SSLCertificateChainFile "/etc/httpd/ssl/Chain_RootCA_Bundle.crt"

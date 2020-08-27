@@ -179,6 +179,51 @@ SET       TABLE1.COLUMN1 = TABLE2.COLUMN3
 WHERE  TABLE1.COLUMN2 = TABLE2.COLUMN4
 ;
 
+-- 문자열 길이
+SELECT  CHAR_LENGTH ('오디언');
+
+
+
+-- rlike 
+https://dev.mysql.com/doc/refman/5.6/en/regexp.html#operator_regexp
+
+SELECT Title,Author,Actor,Publisher,search_keyword 
+FROM product_info 
+-- WHERE   search_keyword RLIKE '.*동인.*자.*' ;
+-- WHERE  search_keyword RLIKE '.*피부.*마' ;
+-- WHERE  search_keyword RLIKE '.*김동인.*감자' ;
+-- WHERE  search_keyword RLIKE '동인.*자' ;
+-- WHERE  search_keyword RLIKE '동인.+자' ;
+-- WHERE  search_keyword RLIKE '대리' ;
+WHERE  search_keyword RLIKE '삼성.+공부' ;
+;
+
+
+
+-- fulltext search
+/*
+[mysqld] 
+ft_min_word_len = 2 	
+innodb_ft_min_token_size = 2
+*/
+DROP INDEX ft_product_info_idx ON product_info;
+ALTER TABLE product_info ADD FULLTEXT INDEX  ft_product_info_idx(Title,SubTitle,Author,Actor,Publisher);
+
+SELECT Title,SubTitle,Author,Actor,Publisher FROM product_info ;
+
+
+SELECT * FROM product_info WHERE  ( title LIKE '감자%' OR SubTitle LIKE '감자%' );
+
+select Title,SubTitle,Author,Actor,Publisher
+from product_info  
+where match(Title,SubTitle,Author,Actor,Publisher) AGAINST('아버지학*' in boolean MODE);
+
+
+select Title,SubTitle,Author,Actor,Publisher  , match(Title,SubTitle,Author,Actor,Publisher) AGAINST('아버지' )
+from product_info  
+where match(Title,SubTitle,Author,Actor,Publisher) AGAINST('아버지가' )
+;
+
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> MSSQL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

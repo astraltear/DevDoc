@@ -73,6 +73,7 @@ cd /storage/tomcat-9/
 cp -R ./conf ./instance1;cp -R ./logs ./instance1;cp -R ./temp ./instance1; cp -R ./webapps ./instance1; cp -R ./work ./instance1
 cp -R ./conf ./instance2;cp -R ./logs ./instance2;cp -R ./temp ./instance2; cp -R ./webapps ./instance2; cp -R ./work ./instance2
 cp -R ./conf ./instance3;cp -R ./logs ./instance3;cp -R ./temp ./instance3; cp -R ./webapps ./instance3; cp -R ./work ./instance3
+cp -R ./conf ./instance4;cp -R ./logs ./instance4;cp -R ./temp ./instance4; cp -R ./webapps ./instance4; cp -R ./work ./instance4
 rm -rf ./conf;rm -rf ./logs;rm -rf ./temp;rm -rf ./webapps;rm -rf ./work
 
 cd /home/user
@@ -126,7 +127,7 @@ fi
 
 export CATALINA_BASE=/storage/tomcat-9/instance1
 export CATALINA_OPTS="-Denv=product -Denv.servername=instance1"
-export JAVA_OPTS="-Dfile.encoding=UTF-8 -Xms1024m -Xmx1024m -XX:+DisableExplicitGC"
+export JAVA_OPTS="-Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -server -d64 -Xms3g -Xmx3g -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+DisableExplicitGC"
 cd $CATALINA_HOME/bin
 ./startup.sh
 
@@ -162,7 +163,7 @@ fi
 
 export CATALINA_BASE=/storage/tomcat-9/instance2
 export CATALINA_OPTS="-Denv=product -Denv.servername=instance2"
-export JAVA_OPTS="-Dfile.encoding=UTF-8 -Xms1024m -Xmx1024m -XX:+DisableExplicitGC"
+export JAVA_OPTS="-Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true  -Xms3g -Xmx3g -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+DisableExplicitGC"
 cd $CATALINA_HOME/bin
 ./startup.sh
 

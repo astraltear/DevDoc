@@ -1,4 +1,11 @@
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> utils
+
+vim 
+처음으로  gg
+파일끝이동 G
+이전/다음 CTRL+B, CTRL+F
+
+
 * 압축
 압축하기
 tar -cvf pds20040910.tar https-pds	
@@ -81,6 +88,7 @@ rm -f directoryName
 
 * 환경변수 반영
 source .bash_profile 
+
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yum 관련 
 yum -y update
