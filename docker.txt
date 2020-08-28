@@ -1,0 +1,63 @@
+
+***** 설치
+
+<< ubuntu 14.0.4, 16.04, 18.04 >> 
+#sudo apt-get update
+#curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+#sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+#sudo apt-get update
+#apt-cache policy docker-ce
+
+<< centos 7 >>
+#yum install -y yum-utils
+#yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+#yum install -y docker-ce
+#systemctl start docker
+
+<<  설치 확인 >>
+docker -v
+docker info 
+
+리눅스 서버에서 docker 명령을 사용할 때 docker 데몬이 root 권한으로 실행되기 때문에 항상 sudo를 붙힌 후 docker 명령을 실행해야 하는 불편함이 있다.
+이 같은 불편함을 덜려면 로그인 계정을 docker 그룹에 추가해 주면 된다.
+
+sudo usermod -aG docker $USER
+위 명령을 실행한 후 로그아웃한 후 다시 로그인하면 sudo 없이도 docker 명령을 실행할 수 있다.
+
+***** 컨테이너 생성
+컨테이너 생성 및 실행과 동시에 컨테이너 내부로 진입 
+docker run -i -t ubuntu:14.04           #   -i : 상호입출력  -t: tty 활성화 
+
+exit 또는 CTRL+D 입력으로 컨테이너에 빠져나옴과 동시에 컨테이너 정지 
+CTRL+P, Q 입력은 컨테이너에만 빠져나옴 
+
+
+<< step by step >>
+이미지 받기
+docker pull cnetos:7
+
+받은 이미지 확인
+docker images
+
+컨테이너 생성하기(create 명령어는 컨테이너를 생성만 할 뿐 컨테이너로 들어가지는 않는다.)
+docker create -i -t --name mycentos centos:7
+
+컨테이너 시작
+docker start mycentos
+
+컨테이너 정지
+docker stop mycentos
+
+컨테이너 내부로 진입
+docker attach mycentos
+
+컨테이너 목록(정지되지 않은 컨테이너 목록)
+docker ps
+
+컨테이너 목록(정지된 컨테이너 포함한 모든 목록 )
+docker ps -a
+
+컨테이너 삭제
+docker rm mycentos
+
+
