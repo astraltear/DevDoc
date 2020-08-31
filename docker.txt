@@ -24,20 +24,47 @@ docker info
 sudo usermod -aG docker $USER
 위 명령을 실행한 후 로그아웃한 후 다시 로그인하면 sudo 없이도 docker 명령을 실행할 수 있다.
 
-***** 컨테이너 생성
+
+***** run 명령어 옵션 
+-i : 상호입출력  
+-t : tty 활성화 
+-d : dettached 모드로 컨테이너를 실행. detached 모드는 컨테이너를 백그라운드로 동작하는 애플리케이션으로서 실행  
+
+***** 도커 명령어
+
+받은 이미지 확인
+docker images
+
+컨테이너 목록(정지되지 않은 컨테이너 목록)
+docker ps
+
+컨테이너 목록(정지된 컨테이너 포함한 모든 목록 )
+docker ps -a
+
+컨테이너 삭제
+docker rm mycentos
+
+포트 바인딩
+-p[호스트의 포트]:[컨테이너의 포트]
+docker run -i -t --name mywebserver -p 7777:80 ubuntu:14.04
+
+
+-d 옵션으로 생성한 컨테이너에 접근하기 
+docker exec -i -t [컨테이너이름] /bin/bash
+
+
+***** 컨테이너 생성 1
 컨테이너 생성 및 실행과 동시에 컨테이너 내부로 진입 
-docker run -i -t ubuntu:14.04           #   -i : 상호입출력  -t: tty 활성화 
+docker run -i -t ubuntu:14.04           
 
 exit 또는 CTRL+D 입력으로 컨테이너에 빠져나옴과 동시에 컨테이너 정지 
 CTRL+P, Q 입력은 컨테이너에만 빠져나옴 
 
 
-<< step by step >>
+
+***** 컨테이너 생성 2 << step by step >>
 이미지 받기
 docker pull cnetos:7
-
-받은 이미지 확인
-docker images
 
 컨테이너 생성하기(create 명령어는 컨테이너를 생성만 할 뿐 컨테이너로 들어가지는 않는다.)
 docker create -i -t --name mycentos centos:7
@@ -51,14 +78,20 @@ docker stop mycentos
 컨테이너 내부로 진입
 docker attach mycentos
 
-컨테이너 목록(정지되지 않은 컨테이너 목록)
-docker ps
+***** 웹서버 컨테이너 생성 
 
-컨테이너 목록(정지된 컨테이너 포함한 모든 목록 )
-docker ps -a
+포트 바인딩
+docker run -i -t --name mywebserver -p 7777:80 ubuntu:14.04
 
-컨테이너 삭제
-docker rm mycentos
+-p[호스트의 포트]:[컨테이너의 포트]
 
+** ubuntu 일 때 apache 설치
+apt-get update
+apt-get install apache2 -y
+service apache2 start
 
-11111111
+[호스트 IP]:7777 으로 접근하면 설치된 아파치 서버로 연결됨 
+
+***** mysql 생성 
+docker run -d --name mysqldb5.7 -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=testdb -p 13306:3306 mysql:5.7
+
