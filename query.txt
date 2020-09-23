@@ -23,6 +23,17 @@ select  now()+5;
 select DATE_ADD(now(),INTERVAL 60*5 SECOND), now();
 select now(), DATE_ADD(now(),INTERVAL 50 SECOND)	;
 select curdate(), curtime(),DATE_FORMAT(now(), '%Y%m%d'),DATE_FORMAT(now(), '%H%i%s');
+select DATE_FORMAT(NOW(),'%H:%i:%s');
+
+SELECT STR_TO_DATE('2000-01-31', '%Y-%m-%d %H:%i:%s'), STR_TO_DATE('2020-08-01 11:25:29', '%Y-%m-%d %H:%i:%s');
+
+SELECT DATEDIFF('2016-04-20','2016-04-01') AS DiffDate  -- 날짜차이 계산: DATEDIFF(expr1, expr2)
+
+SELECT TIMESTAMPDIFF(second,start_time,end_time); 		-- 초단위시간 차이 계산
+
+SEC_TO_TIME(TIMESTAMPDIFF(second,start_time,end_time))  -- 초단위 시간 차이를 시간으로 계산
+
+SELECT TIME_TO_SEC('04:30:59'), TIME_TO_SEC('08:59:59')
 
 -- 엔진 확인 
 show engines;
@@ -223,6 +234,7 @@ select Title,SubTitle,Author,Actor,Publisher  , match(Title,SubTitle,Author,Acto
 from product_info  
 where match(Title,SubTitle,Author,Actor,Publisher) AGAINST('아버지가' )
 ;
+
 
 
 

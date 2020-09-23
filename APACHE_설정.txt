@@ -18,6 +18,8 @@ grep -irn mod_lbmethod_byrequests.so ./
 vim /etc/httpd/conf/httpd.conf
 
 ServerName 192.168.60.9:80
+TImeout 600				# 502 Bad Gateway 방지
+ProxyTimeout 600		# 502 Bad Gateway  방지
 
 <IfModule proxy_module> 
 	ProxyRequests Off
