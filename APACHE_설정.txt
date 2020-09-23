@@ -330,6 +330,8 @@ CustomLog "|/usr/local/apache2.4/bin/rotatelogs /usr/local/apache2.4/logs/ssl_re
 <IfModule proxy_module>
 	ProxyRequests Off
 	ProxyPreserveHost On
+	Timeout 600
+	ProxyTimeout 600
 
 	ProxyPass / balancer://mycluster/
 	ProxyPassReverse / balancer://mycluster/
@@ -358,6 +360,8 @@ conf/extra/httpd-vhosts.conf 아래 내용 추가
 <VirtualHost *:80>
     ServerName wstage.server.com
     DocumentRoot "/usr/local/apache2.4/htdocs"
+	Timeout 600
+	ProxyTimeout 600
 
         <IfModule proxy_module>
                 ProxyRequests Off
@@ -376,6 +380,8 @@ conf/extra/httpd-vhosts.conf 아래 내용 추가
 <VirtualHost *:80>
     ServerName mstage.server.com
     DocumentRoot "/usr/local/apache2.4/htdocs"
+	Timeout 600
+	ProxyTimeout 600
 
         <IfModule proxy_module>
                 ProxyRequests Off
@@ -393,6 +399,8 @@ conf/extra/httpd-vhosts.conf 아래 내용 추가
 <VirtualHost *:80>
     ServerName apistage.server.com
     DocumentRoot "/usr/local/apache2.4/htdocs"
+	Timeout 600
+	ProxyTimeout 600
 
         <IfModule proxy_module>
                 ProxyRequests Off
@@ -504,3 +512,11 @@ apachectl stop
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> apache tomcat proxy bad gateway 502
+https://httpd.apache.org/docs/2.4/mod/mod_proxy.html#proxytimeout
+
+Timeout 600
+ProxyTimeout 600
+
+https://stackoverflow.com/questions/169453/bad-gateway-502-error-with-apache-mod-proxy-and-tomcat
