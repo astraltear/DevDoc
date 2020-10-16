@@ -98,6 +98,10 @@ yum grouplist   -- yum 그룹 패키지를 설치여부
 yum  groupinstall "Development Tools"
 yum groupremove "Development Tools"
 
+
+yum install bind-utils net-tools -y
+
+
 yum install wget
 
 yum 명령어
@@ -122,6 +126,11 @@ yum install <라이브러리명> --downloadonly --downloaddir=<path>
 yum list installed mysql*
 yum -y remove java-1.7.0-openjdk.x86_64
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 자원 사용 현황
+yum -y install epel-release 
+yum -y install htop
+
+htop 명령어로 top 보다 한 눈에 사용현황 파악 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 배포판 버전확인
 cat /etc/*-release
@@ -708,6 +717,7 @@ curl  -X POST -d "userId=인코딩된문자열&userPw=인코딩된문자열" "ht
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  openssl 확인
 yum install openssl
 echo | openssl s_client -connect www.domain.com:443
+echo | openssl s_client -connect aspservice.audien.com:443 2>/dev/null | openssl x509 -noout -dates
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  route  정보 확인
@@ -720,6 +730,30 @@ ip route
 
 
 traceroute 1.201.137.56
+
+서버에서 외부 도메인으로 연결이 안되면 DNS를 의심해본다
+
+우선적으로 아래의 파일을 수정해서 curl, traceroute를 실행했을 때 정상이라면  nameserver문제일 가능성크다.
+/etc/hosts 파일에 실제 서버IP,  도메인을 넣어본다.
+
+그렇다면 아래의 파일을 수정한다. (서비스 재시작없이 바로 적용됨)
+vi /etc/resolv.conf nameserver 
+# KT
+nameserver 168.126.63.1
+nameserver 168.126.63.2
+# SKT
+nameserver 210.220.163.82
+nameserver 219.250.36.130
+# LG
+nameserver 164.124.101.2
+nameserver 203.248.252.2
+# google
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+
+
+
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  oom killer 우선순위 조정
