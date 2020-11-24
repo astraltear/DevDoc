@@ -150,7 +150,11 @@ http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  8.0
 
 ** 8.0 에서는 lower_case_table_names 최초 구동시 세팅하지 않으면 추후 변경되지 않는다.
-아래의 설정값을 모두 입력 후 (my.cnf  ) 구동한다. 
+lower_case_table_names = 1 만 세팅을 한 후에 구동을 한다.
+이후  grep 'temporary password' /var/log/mysqld.log 로 생성된 패스워드를 확인 후
+root  패스워드로 접근을 하면 패스워드를 재설정한다.
+
+이렇게 한 이후 아래의 설정값을 모두 입력 후 (my.cnf  ) 구동한다. 
 
 
 wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
@@ -169,11 +173,11 @@ cp /etc/my.cnf /etc/my.cnf_20190626
 vim /etc/my.cnf
 
 [mysqld]
-log-error=/var/log/mysqld.log
-pid-file=/var/run/mysqld/mysqld.pid
 
 datadir=/storage/mysqldata
 socket=/var/lib/mysql/mysql.sock
+
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
 
 port=13306
 character-set-client-handshake=FALSE
