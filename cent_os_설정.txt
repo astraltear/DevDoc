@@ -89,6 +89,9 @@ rm -f directoryName
 * 환경변수 반영
 source .bash_profile 
 
+ldd "app name"
+예) ldd busybox
+동적 라이브러리 링크를 실행해서  "busybox" 실행에 필요한 의존 라이브러리를 찾는다.
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> yum 관련 
 yum -y update
@@ -125,6 +128,12 @@ yum install <라이브러리명> --downloadonly --downloaddir=<path>
 * 어플리케이션 삭제 
 yum list installed mysql*
 yum -y remove java-1.7.0-openjdk.x86_64
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ubuntu cups 프린터 공유하기
+https://oslinux.tistory.com/37
+https://www.nemonein.xyz/2019/07/2293/
+https://m.blog.naver.com/wowpotato/10132002565
+
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 자원 사용 현황
 yum -y install epel-release 
