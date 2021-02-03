@@ -132,7 +132,8 @@ yum -y remove java-1.7.0-openjdk.x86_64
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ubuntu cups 프린터 공유하기
 https://oslinux.tistory.com/37
 https://www.nemonein.xyz/2019/07/2293/
-https://m.blog.naver.com/wowpotato/10132002565
+https://blog.naver.com/wowpotato/10132002565
+http://perdupper.blogspot.com/2018/02/airprint.html
 
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 자원 사용 현황
@@ -407,6 +408,14 @@ find /usr/local/tomcat/logs -mtime -30 -name '*.log' -exec rm -f {} \;	30일(720
 find /root -mtime +30 -exec mv {} /tmp \;    30일 이전에 작성된 파일을 특정 디렉토리로 이동 
 
 find /home/tmax/jeus/logs/JeusServer/*.log  -mtime 30 -exec rm -rf {} \;  // 30일(720시간) ~ 31일(744시간) 사이에 작성, 변경된 파일 조회
+
+"localhost.2021-01-26.log" 파일은 제외
+find /storage/tomcat-9/instance1/logs/ -mtime +3 -name '*.*' -and ! -name 'localhost.2021-01-26.log'
+
+위와 같이 입력할 경우 현재 디렉토리에서(하위 디렉토리 포함) main.cpp 를 제외한 *.h, *.so 확장자를 가지지 않은 파일
+find . -type f -and ! -name main.cpp -and ! -name *.h -and ! -name *.so
+
+
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> bg fg kill CTRL+Z
 jobs 라는 명령어는 background 작업들과 상태들을 나타내 줍니다.
